@@ -65,9 +65,11 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         //System.out.println("Target: "+location.getX()+","+location.getY());
         Graph APGraph = makeAPGraph();
         //System.out.println("HEYO " + APGraph.getEdges());
-        Graph OTMGraph = makeOTMGraph();
+        
         AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
         int maxCost = thisAnt.getAntType().getMaxActionPoints();
+        
+        Graph OTMGraph = makeOTMGraph();
         for (Node node : OTMGraph) {
             APAlgorithm.reset();
             Node APNode = APGraph.getNode(node.getX(), node.getY(), node.getDir());
