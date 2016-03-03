@@ -17,7 +17,14 @@ import java.util.Random;
 public class QueenAI extends SharedAI implements IAntAI {
     private final Random rnd = new Random();
     
-    
+    /* 
+     * Queen states:
+     *  - Start of game
+     *  - After spawning first ant (carrier ant)
+     *  - After spawning 2nd ant (scout ant)
+     *  - After spawning 3rd ant (defender ant?)
+     *  - Others? like being attacked.
+     */
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
         sharedMap = new AntWarsAIMap(worldSizeX, worldSizeY);
@@ -29,17 +36,25 @@ public class QueenAI extends SharedAI implements IAntAI {
     @Override
     public void onStartTurn(IAntInfo thisAnt, int turn) {
         sharedOnStartTurn(thisAnt, turn);
-        spinCounter = 2;
+        //spinCounter = 2;
+        //spinPlease--;
     }
 
-    int spinCounter = 2;
-    boolean spinPlease = true;
+    //int spinCounter = 2;
+    int spinPlease = 3; //Increment to avoid spin, Decrement to spin
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
         EAction action;
-        if (!moves.isEmpty() && possibleActions.contains(moves.get(0))) {
-            action = moves.remove(0);
+        if (!moves.isEmpty()) {
+            if (possibleActions.contains(moves.get(0))) {
+                action = moves.remove(0);
+            }
+            else {
+                System.out.println("found impossible action" + moves.get(0));
+                action = EAction.Pass;
+            }
+                
         }
         else if (possibleActions.contains(EAction.PickUpFood)) {
             action = EAction.PickUpFood;
@@ -47,16 +62,24 @@ public class QueenAI extends SharedAI implements IAntAI {
         else if (thisAnt.getFoodLoad() > 3) {
             action = EAction.EatFood;
         }
-        else if (spinPlease && spinCounter > 0 && possibleActions.contains(EAction.TurnLeft)) {
+        else if (spinPlease > 0 && possibleActions.contains(EAction.TurnLeft)) {
             action = EAction.TurnLeft;
-            spinCounter--;
-            if (spinCounter == 0) spinPlease = false;
+            spinPlease--;
+            //spinCounter--;
+            //if (spinCounter == 0) spinPlease = 1; //spinPlease = false;
         }
         else if (thisAnt.getActionPoints() == thisAnt.getAntType().getMaxActionPoints()) {
             List<ILocationInfo> foodLocations = sharedMap.getLocationsWithFood();
-            moves = sharedMap.getMoves(thisAnt, foodLocations);
-            action = moves.remove(0);
-            spinPlease = true;
+            if (foodLocations.size() == 0) {
+                System.out.println("No locations with food found");
+                spinPlease++;
+                action = EAction.Pass;
+            }
+            else {
+                moves = sharedMap.getMoves(thisAnt, foodLocations);
+                action = moves.remove(0);
+                if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 3;
+            }
         }
         else {
             action = EAction.Pass;

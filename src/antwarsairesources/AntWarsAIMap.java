@@ -48,7 +48,33 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return food;
     }
     
+    
+    //Different path methods/path related methods below
+    
     //TODO Implement this one properly
+    //It should find the path to the location with the lowest cost (in turns).
+    
+    /*
+     * Follow methods should be available to the ants
+     * Most of the functions will be done by refactoring the working one. The 
+     * "heavy" work is done (hopefully).
+     * List<EAction> getMoves(IAntInfo ant, List<ILocationInfo> locations): TODO
+     * List<EAction> getMoves(IAntInfo ant, ILocationInfo location): TODO
+     * List<EAction> getMoves(IAntInfo ant, ILocationInfo location, int direction): Works, but needs cleanup/refactoring 
+     * List<EAction> getMoves(Iterable<Node> path): TODO
+     * 
+     * Maybe change from Iterable to some List type (easier to work with)
+     * Iterable<Node> getShortestPath(IAntInfo ant, List<ILocationInfo> locations): TODO
+     * Iterable<Node> getShortestPath(IAntInfo ant, ILocationInfo location): TODO
+     * Iterable<Node> getShortestPath(IAntInfo ant, ILocationInfo location, int direction): TODO
+     */
+    
+    /**
+     * bla bla javadoc test
+     * @param thisAnt The ant you want to calcul
+     * @param locations targets
+     * @return moves...
+     */
     public List<EAction> getMoves(IAntInfo thisAnt, List<ILocationInfo> locations) {
         for (ILocationInfo loc : locations) {
             List<EAction> actions = getMoves(thisAnt, loc, thisAnt.getDirection());
@@ -60,6 +86,15 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     private final int turnCost = 2;
     private final int forwardCost = 3;
     private final int backwardCost = 4;
+    /**
+     * A lot of magic happens in this methods. Needs to be refactored and split 
+     * in different methods. Explanation for this and the rest of the methods 
+     * will come then, hopefully.
+     * @param thisAnt
+     * @param location
+     * @param locationDirection
+     * @return 
+     */
     public List<EAction> getMoves(IAntInfo thisAnt, ILocationInfo location, int locationDirection) {
         if (location == null) return new ArrayList();
         //System.out.println("Target: "+location.getX()+","+location.getY());
@@ -79,9 +114,9 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
                 //System.out.println(APNode + " " + begin);
                 Node end = iterator.next();
                 while (iterator.hasNext()) end = iterator.next();
-                if (begin.getX() == end.getX() && begin.getY() == end.getY()) {}
+                if (begin.getX() == end.getX() && begin.getY() == end.getY() && begin.getDir() == end.getDir()) {}
                 else {                
-                    System.out.println("Found a path from " + begin.getX()+","+begin.getY()+","+begin.getDir() + " to " + end.getX() + "," + end.getY()+","+end.getDir());
+                    //System.out.println("Found a path from " + begin.getX()+","+begin.getY()+","+begin.getDir() + " to " + end.getX() + "," + end.getY()+","+end.getDir());
 
                     Node OTMBegin = OTMGraph.getNode(begin.getX(), begin.getY(), begin.getDir());
                     Node OTMEnd = OTMGraph.getNode(end.getX(), end.getY(), end.getDir());
@@ -89,12 +124,14 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
                 }
             }
         }
-        AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
-        //AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
+        //AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
+        AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
         Node start = OTMGraph.getNode(thisAnt.getLocation().getX(), thisAnt.getLocation().getY(), thisAnt.getDirection());
         
         Node goal = OTMGraph.getNode(location.getX(), location.getY(), locationDirection);
-        System.out.println("location: "+location.getX()+","+location.getY());
+        System.out.println("______________________");
+        System.out.println("Current location: "+thisAnt.getLocation().getX()+","+thisAnt.getLocation().getY()+","+thisAnt.getDirection());
+        System.out.println("Target location: "+location.getX()+","+location.getY());
         //System.out.println("HEYO " + OTMGraph.getEdges());
         System.out.println("Trying "+nts(start)+" " + nts(goal));
         Iterable<Node> OTMPath = OTMAlgorithm.findShortestPath(start, goal);
@@ -116,9 +153,12 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return APPathToActionList(APPath);
     }
     
+    
+    //Debug helper function. No practical use. Returns a Nodes coordinates and direction as a String
     private String nts(Node node) {
         return node.getX()+","+node.getY()+","+node.getDir();
     }
+    
     
     private List<EAction> APPathToActionList(Iterable<Node> path) {
         List<EAction> actions = new ArrayList<>();
@@ -133,6 +173,16 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return actions;
     }
     
+    /**
+     * Takes 2 Nodes. They have x, y and direction. 
+     * The 2 Nodes should be neighbors in an AP Graph. 2 Nodes are neighbors if 
+     * there is an EAction that can take them from node1 to node2. This is 
+     * vague and could be explained further if necessary?
+     * It returns the required EAction to move from node1 to node2.
+     * If the 2 Nodes is not neighbors, EAction.Pass will be returned. If the 
+     * method calling this method works correctly, the case of two not being 
+     * neighbors should never happen.
+     */
     private EAction nodesToAction(Node node1, Node node2) {
         //System.out.println("node1: "+node1.getX()+","+node1.getY()+","+node1.getDir() + "  node2: "+node2.getX()+","+node2.getY()+","+node2.getDir());
         if (node1.getX() == node2.getX() && node1.getY() == node2.getY()) {
@@ -157,10 +207,18 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
             if (node1.getDir() == 0) return EAction.MoveBackward;
             if (node1.getDir() == 2) return EAction.MoveForward;
         }
-        System.out.println("Error nodesToAction()");
+        System.out.println("Error in nodesToAction(). Not neighbors"); //Maybe do Exception? But will potentially fuck it up in tournament
         return EAction.Pass;
     }
     
+    /**
+     * This methods makes and returns a Graph which is going to be used as the 
+     * OTM Graph (OTM means One Turn Move). Each location on the map is mapped 
+     * to 4 Nodes in the Graph. One for each direction. The edges in an 
+     * OTM Graph should be where an Ant can move from 1 Node to another Node 
+     * in 1 turn (hence One Turn Move). All edges will then have a cost of 1 
+     * (1 turn). Makes sense...?
+     */
     private Graph makeOTMGraph() {
         Graph OTMGraph = new Graph();
         for (AntWarsAIMapLocation loc : this) {
@@ -174,6 +232,14 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         }
         return OTMGraph;
     }
+    
+    /**
+     * This methods makes and returns a Graph, which is going to be used as an 
+     * AP Graph (AP means Action Point). Each location in the map is mapped to 
+     * 4 Nodes. The edges is all the places an ant can move from one Node to 
+     * another Node with 1 EAction. The cost of the edge is equal to the cost 
+     * of the EAction in Action Points (Hence AP Graph).
+     */
     private Graph makeAPGraph() {
         Graph APGraph = new Graph();
         
@@ -228,6 +294,11 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return APGraph;
     }
 
+    /**
+     * Adds edges to 2 Nodes in different locations in a Graph, based on a 
+     * direction (forward). Hard to explain without visual stuff... 
+     * This is used in the making of the AP Graph. It uses the EAction costs.
+     */
     private void makeExternalEdge(Graph graph, AntWarsAIMapLocation location, AntWarsAIMapLocation target, int forward) {
         if (validLocation(target)) {
             int backward = (forward+2)%4;
@@ -240,10 +311,16 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         }
     }
     
+    /**
+     * Checks if a location is valid. A location is valid if it has been seen, 
+     * is not filled with dirt and is not a rock (non existing). Used to check 
+     * if Nodes should be created for a location.
+     */
     private boolean validLocation(AntWarsAIMapLocation loc) {
         return loc.getLocationInfo() != null && !loc.getLocationInfo().isFilled() && !loc.getLocationInfo().isRock();
     }
     
+    //If you iterate over this object, it will give you a list of MapLocations
     @Override
     public Iterator<AntWarsAIMapLocation> iterator() {
         Iterator<AntWarsAIMapLocation> it = new Iterator<AntWarsAIMapLocation>() {
