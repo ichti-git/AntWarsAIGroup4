@@ -41,7 +41,7 @@ public class QueenAI extends SharedAI implements IAntAI {
     }
 
     //int spinCounter = 2;
-    int spinPlease = 3; //Increment to avoid spin, Decrement to spin
+    int spinPlease = 4; //Increment to avoid spin, Decrement to spin
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
@@ -76,9 +76,9 @@ public class QueenAI extends SharedAI implements IAntAI {
                 action = EAction.Pass;
             }
             else {
-                moves = sharedMap.getMoves(thisAnt, foodLocations);
+                moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
                 action = moves.remove(0);
-                if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 3;
+                if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 4;
             }
         }
         else {
@@ -96,6 +96,7 @@ public class QueenAI extends SharedAI implements IAntAI {
 
     @Override
     public void onAttacked(IAntInfo thisAnt, int dir, IAntInfo attacker, int damage) {
+        
         sharedOnAttacked(thisAnt, dir, attacker, damage);
     }
 

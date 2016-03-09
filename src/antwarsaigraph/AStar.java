@@ -43,7 +43,7 @@ public class AStar {
         graph.reset();
     }
     
-    public Iterable<Node> findShortestPath(Node start, Node goal) {
+    public List<Node> findShortestPath(Node start, Node goal) {
         Queue<Node> unvisited = new PriorityQueue<>();
         start.setCost(0);
         Node currentNode;
@@ -86,7 +86,7 @@ public class AStar {
         }
     }
     
-    public List<Iterable<Node>> findPathBelowCost(Node start, int maxCost) {
+    public List<List<Node>> findPathBelowCost(Node start, int maxCost) {
         Queue<Node> unvisited = new PriorityQueue<>();
         start.setCost(0);
         Node currentNode;
@@ -114,7 +114,7 @@ public class AStar {
             unvisited.remove(currentNode);
         }
         
-        List<Iterable<Node>> validPaths = new ArrayList<>();
+        List<List<Node>> validPaths = new ArrayList<>();
         for (Node n : graph) {
             if (n != start && n.isVisited() && n.getCost() <= maxCost) {
             

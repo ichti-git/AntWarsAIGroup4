@@ -6,7 +6,7 @@ import aiantwars.ILocationInfo;
  *
  * @author ichti (Simon T)
  */
-class AntWarsAIMapLocation {
+public class AntWarsAIMapLocation {
     private final int x;
     private final int y;
     private ILocationInfo locationInfo;

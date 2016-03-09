@@ -3,11 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="AntWars">
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/PassAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsaigraph/Graph.java</file>
             <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsairesources/AntWarsAIMap.java</file>
             <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/SharedAI.java</file>
             <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsairesources/AntWarsAIMapLocation.java</file>
             <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/QueenAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsaigraph/AStar.java</file>
         </group>
     </open-files>
 </project-private>

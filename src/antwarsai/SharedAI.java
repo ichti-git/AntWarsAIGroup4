@@ -16,6 +16,7 @@ public class SharedAI {
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
     
+    
     protected void sharedOnStartTurn(IAntInfo thisAnt, int turn) {
         currentTurn = turn; //change when getTurn is available
         moves.clear();

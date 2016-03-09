@@ -22,6 +22,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     private final int maxX;
     private final int maxY;
     
+    private final int turnCost = 2;
+    private final int forwardCost = 3;
+    private final int backwardCost = 4;
+    
     public AntWarsAIMap(int worldSizeX, int worldSizeY) {
         maxX = worldSizeX;
         maxY = worldSizeY;
@@ -39,6 +43,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         locations[x][y].setLocationInfo(locInfo);
         locations[x][y].setTurnSeen(currentTurn);
     }
+    
+    public AntWarsAIMapLocation getLocation(int x, int y) {
+        return locations[x][y];
+    }
 
     public List<ILocationInfo> getLocationsWithFood() {
         List<ILocationInfo> food = new ArrayList<>();
@@ -49,32 +57,133 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     
+    
     //Different path methods/path related methods below
-    
-    //TODO Implement this one properly
-    //It should find the path to the location with the lowest cost (in turns).
-    
     /*
      * Follow methods should be available to the ants
-     * Most of the functions will be done by refactoring the working one. The 
-     * "heavy" work is done (hopefully).
-     * List<EAction> getMoves(IAntInfo ant, List<ILocationInfo> locations): TODO
-     * List<EAction> getMoves(IAntInfo ant, ILocationInfo location): TODO
-     * List<EAction> getMoves(IAntInfo ant, ILocationInfo location, int direction): Works, but needs cleanup/refactoring 
-     * List<EAction> getMoves(Iterable<Node> path): TODO
+     * getFirstOneTurnMove : first One Turn Move of path
+     * getOneTurnMoves : List of One Turn Moves for path
+     * getMovesList : List of moves
+     * getMapPath : List of Locations for path. Not implented. TODO
      * 
-     * Maybe change from Iterable to some List type (easier to work with)
-     * Iterable<Node> getShortestPath(IAntInfo ant, List<ILocationInfo> locations): TODO
-     * Iterable<Node> getShortestPath(IAntInfo ant, ILocationInfo location): TODO
-     * Iterable<Node> getShortestPath(IAntInfo ant, ILocationInfo location, int direction): TODO
      */
     
+    public List<EAction> getFirstOneTurnMove(List<List<EAction>> OTMList) {
+        return OTMList.get(0);
+    }
+    
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location, int direction) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, location, direction));
+    }
+    
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, location));
+    }
+    
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, List<ILocationInfo> locations) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, locations));
+    }
+    
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction) {
+        if (location == null) return new ArrayList();
+        
+        Graph APGraph = makeAPGraph();
+        AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
+        
+        
+        int maxCost = ant.getAntType().getMaxActionPoints();
+        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost);
+        //AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
+        AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
+        
+        Node start = OTMGraph.getNode(ant.getLocation().getX(), ant.getLocation().getY(), ant.getDirection());
+        Node goal = OTMGraph.getNode(location.getX(), location.getY(), direction);
+        
+        
+        //Debug stuff
+        /*
+        System.out.println("______________________");
+        System.out.println("Current location: "+ant.getLocation().getX()+","+ant.getLocation().getY()+","+ant.getDirection());
+        System.out.println("Target location: "+location.getX()+","+location.getY());
+        //System.out.println("HEYO " + OTMGraph.getEdges());
+        System.out.println("Trying "+nts(start)+" " + nts(goal));
+        */
+        
+        List<Node> OTMPath = OTMAlgorithm.findShortestPath(start, goal);
+        return PathToActionList(OTMPath, APAlgorithm);
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location) {
+        int cost = Integer.MAX_VALUE;
+        List<List<EAction>> best = null;
+        for (int i = 0; i < 4; i++) {
+            List<List<EAction>> OTM = getOneTurnMoves(ant, location, i);
+            if (OTM.size() < cost) {
+                best = OTM;
+            }
+        }
+        return best;
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, List<ILocationInfo> locations) {
+        int cost = Integer.MAX_VALUE;
+        List<List<EAction>> best = null;
+        for (ILocationInfo location : locations) {
+            List<List<EAction>> OTM = getOneTurnMoves(ant, location);
+            if (OTM.size() < cost) {
+                best = OTM;
+            }
+        }
+        return best;
+    }
+    
+    
+    public List<EAction> getMovesList(List<List<EAction>> OneTurnMoves) {
+        List<EAction> list = new ArrayList<>();
+        for (List<EAction> actions : OneTurnMoves) {
+            for (EAction a : actions) {
+                list.add(a);
+            }
+        }
+        return list;
+    }
+    
+    public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location, int direction) {
+        return getMovesList(getOneTurnMoves(ant, location, direction));
+    }
+    
+    public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location) {
+        return getMovesList(getOneTurnMoves(ant, location));
+    }
+    
+    public List<EAction> getMovesList(IAntInfo ant, List<ILocationInfo> locations) {
+        return getMovesList(getOneTurnMoves(ant, locations));
+    }
+    
+    /* TODO
+    public List<AntWarsAIMapLocation> getMapPath(IAntInfo ant, ILocationInfo location, int direction) {
+        
+    }
+    
+    public List<AntWarsAIMapLocation> getMapPath(IAntInfo ant, ILocationInfo location) {
+        
+    }
+    
+    public List<AntWarsAIMapLocation> getMapPath(IAntInfo ant, List<ILocationInfo> locations) {
+        
+    }
+    */
+    
     /**
+     * Don't use this function. Replaced with getFirstOneTurnMove().
      * bla bla javadoc test
      * @param thisAnt The ant you want to calcul
      * @param locations targets
      * @return moves...
+     * @deprecated 
      */
+    @Deprecated
     public List<EAction> getMoves(IAntInfo thisAnt, List<ILocationInfo> locations) {
         for (ILocationInfo loc : locations) {
             List<EAction> actions = getMoves(thisAnt, loc, thisAnt.getDirection());
@@ -83,58 +192,42 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return null;
     }
     
-    private final int turnCost = 2;
-    private final int forwardCost = 3;
-    private final int backwardCost = 4;
     /**
+     * Don't use this function. Replaced with getFirstOneTurnMove().
      * A lot of magic happens in this methods. Needs to be refactored and split 
      * in different methods. Explanation for this and the rest of the methods 
      * will come then, hopefully.
-     * @param thisAnt
+     * @param ant
      * @param location
-     * @param locationDirection
+     * @param direction
      * @return 
+     * @deprecated
      */
-    public List<EAction> getMoves(IAntInfo thisAnt, ILocationInfo location, int locationDirection) {
+    @Deprecated
+    public List<EAction> getMoves(IAntInfo ant, ILocationInfo location, int direction) {
+        return getFirstOneTurnMove(ant, location, direction);
+        /*
         if (location == null) return new ArrayList();
-        //System.out.println("Target: "+location.getX()+","+location.getY());
+        
         Graph APGraph = makeAPGraph();
-        //System.out.println("HEYO " + APGraph.getEdges());
-        
         AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
-        int maxCost = thisAnt.getAntType().getMaxActionPoints();
         
-        Graph OTMGraph = makeOTMGraph();
-        for (Node node : OTMGraph) {
-            APAlgorithm.reset();
-            Node APNode = APGraph.getNode(node.getX(), node.getY(), node.getDir());
-            for (Iterable<Node> it : APAlgorithm.findPathBelowCost(APNode, maxCost)) {
-                Iterator<Node> iterator = it.iterator();
-                Node begin = iterator.next();
-                //System.out.println(APNode + " " + begin);
-                Node end = iterator.next();
-                while (iterator.hasNext()) end = iterator.next();
-                if (begin.getX() == end.getX() && begin.getY() == end.getY() && begin.getDir() == end.getDir()) {}
-                else {                
-                    //System.out.println("Found a path from " + begin.getX()+","+begin.getY()+","+begin.getDir() + " to " + end.getX() + "," + end.getY()+","+end.getDir());
-
-                    Node OTMBegin = OTMGraph.getNode(begin.getX(), begin.getY(), begin.getDir());
-                    Node OTMEnd = OTMGraph.getNode(end.getX(), end.getY(), end.getDir());
-                    OTMGraph.createEdge(OTMBegin, OTMEnd, 1); //create edge from the path, with cost of 1 (One turn)
-                }
-            }
-        }
+        
+        int maxCost = ant.getAntType().getMaxActionPoints();
+        
+        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost);
         //AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
         AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
-        Node start = OTMGraph.getNode(thisAnt.getLocation().getX(), thisAnt.getLocation().getY(), thisAnt.getDirection());
+        Node start = OTMGraph.getNode(ant.getLocation().getX(), ant.getLocation().getY(), ant.getDirection());
         
-        Node goal = OTMGraph.getNode(location.getX(), location.getY(), locationDirection);
+        Node goal = OTMGraph.getNode(location.getX(), location.getY(), direction);
         System.out.println("______________________");
-        System.out.println("Current location: "+thisAnt.getLocation().getX()+","+thisAnt.getLocation().getY()+","+thisAnt.getDirection());
+        System.out.println("Current location: "+ant.getLocation().getX()+","+ant.getLocation().getY()+","+ant.getDirection());
         System.out.println("Target location: "+location.getX()+","+location.getY());
         //System.out.println("HEYO " + OTMGraph.getEdges());
         System.out.println("Trying "+nts(start)+" " + nts(goal));
         Iterable<Node> OTMPath = OTMAlgorithm.findShortestPath(start, goal);
+        //Iterable<Node> OTMPath = getShortestPath(thisAnt, location, locationDirection);
         Iterator<Node> OTMIte = OTMPath.iterator();
         Node OTMFirst = OTMIte.next();
         Node OTMSecond = OTMIte.next();
@@ -151,16 +244,52 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         }
         System.out.println(APPathToActionList(APPath));
         return APPathToActionList(APPath);
+        * */
     }
     
+    /*
+    public List<Node> getShortestPath(IAntInfo ant, List<ILocationInfo> locations) {
+        
+    }
+    public List<Node> getShortestPath(IAntInfo ant, ILocationInfo location) {
+        
+    }
+    * */
+    /*
+    public List<Node> getShortestPath(IAntInfo ant, ILocationInfo location, int direction) {
+        
+        if (location == null) return new ArrayList();
+        Graph APGraph = makeAPGraph();
+        AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
+        
+        int maxCost = ant.getAntType().getMaxActionPoints();
+        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost);
+        AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
+        //AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
+        
+        Node start = OTMGraph.getNode(ant.getLocation().getX(), ant.getLocation().getY(), ant.getDirection());
+        Node goal = OTMGraph.getNode(location.getX(), location.getY(), direction);
+        System.out.println("______________________");
+        System.out.println("Current location: "+ant.getLocation().getX()+","+ant.getLocation().getY()+","+ant.getDirection());
+        System.out.println("Target location: "+location.getX()+","+location.getY());
+        //System.out.println("HEYO " + OTMGraph.getEdges());
+        System.out.println("Trying "+nts(start)+" " + nts(goal));
+        return OTMAlgorithm.findShortestPath(start, goal);
+    }
+    */
     
     //Debug helper function. No practical use. Returns a Nodes coordinates and direction as a String
     private String nts(Node node) {
         return node.getX()+","+node.getY()+","+node.getDir();
     }
     
-    
-    private List<EAction> APPathToActionList(Iterable<Node> path) {
+    /**
+     * Makes a OneTurnMove list. A list of EAction for the ant to use, which
+     * can be done in one turn.
+     * @param path
+     * @return 
+     */
+    private List<EAction> APPathToActionList(List<Node> path) {
         List<EAction> actions = new ArrayList<>();
         Iterator<Node> iterator = path.iterator();
         Node cur = iterator.next();
@@ -219,7 +348,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * in 1 turn (hence One Turn Move). All edges will then have a cost of 1 
      * (1 turn). Makes sense...?
      */
-    private Graph makeOTMGraph() {
+    private Graph makeOTMGraph(AStar APAlgorithm, int maxCost) {
         Graph OTMGraph = new Graph();
         for (AntWarsAIMapLocation loc : this) {
             if (validLocation(loc)) {
@@ -228,6 +357,24 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
                 Node east = OTMGraph.createNode(loc.getX(), loc.getY(), 1);
                 Node south = OTMGraph.createNode(loc.getX(), loc.getY(), 2);
                 Node west = OTMGraph.createNode(loc.getX(), loc.getY(), 3);
+            }
+        }
+        
+        for (Node node : OTMGraph) {
+            APAlgorithm.reset();
+            Graph APGraph = APAlgorithm.getGraph();
+            Node APNode = APGraph.getNode(node.getX(), node.getY(), node.getDir());
+            for (Iterable<Node> it : APAlgorithm.findPathBelowCost(APNode, maxCost)) {
+                Iterator<Node> iterator = it.iterator();
+                Node begin = iterator.next();
+                Node end = iterator.next();
+                while (iterator.hasNext()) end = iterator.next();
+                if (begin.getX() == end.getX() && begin.getY() == end.getY() && begin.getDir() == end.getDir()) {}
+                else {                
+                    Node OTMBegin = OTMGraph.getNode(begin.getX(), begin.getY(), begin.getDir());
+                    Node OTMEnd = OTMGraph.getNode(end.getX(), end.getY(), end.getDir());
+                    OTMGraph.createEdge(OTMBegin, OTMEnd, 1); //create edge from the path, with cost of 1 (One turn)
+                }
             }
         }
         return OTMGraph;
@@ -348,6 +495,30 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
             }
         };
         return it;
+    }
+
+    
+    /**
+     * Goes through the OTMPath and makes OneTurnMoves for each node, using 
+     * the APAlgorithm/APGraph.
+     * @param OTMPath
+     * @param APAlgorithm
+     * @return 
+     */
+    private List<List<EAction>> PathToActionList(List<Node> OTMPath, AStar APAlgorithm) {
+        List<List<EAction>> movesList = new ArrayList<>();
+        for (int i = 1; i < OTMPath.size(); i++) {
+            Node OTMFirst = OTMPath.get(i-1);
+            Node OTMSecond = OTMPath.get(i);
+            APAlgorithm.reset();
+            Graph APGraph = APAlgorithm.getGraph();
+            Node APFirst = APGraph.getNode(OTMFirst.getX(), OTMFirst.getY(), OTMFirst.getDir());
+            Node APSecond = APGraph.getNode(OTMSecond.getX(), OTMSecond.getY(), OTMSecond.getDir());
+            List<Node> APPath = APAlgorithm.findShortestPath(APFirst, APSecond);
+            movesList.add(APPathToActionList(APPath));
+            
+        }
+        return movesList;
     }
     
     
