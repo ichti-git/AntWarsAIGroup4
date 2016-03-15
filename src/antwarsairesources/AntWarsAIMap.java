@@ -21,10 +21,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     private final AntWarsAIMapLocation[][] locations;
     private final int maxX;
     private final int maxY;
-    
-    private final int turnCost = 2;
-    private final int forwardCost = 3;
-    private final int backwardCost = 4;
+    private List<int[]> temporaryInvalidLocations = new ArrayList<>();
+    //private final int turnCost = 2;
+    //private final int forwardCost = 3;
+    //private final int backwardCost = 4;
     
     public AntWarsAIMap(int worldSizeX, int worldSizeY) {
         maxX = worldSizeX;
@@ -44,7 +44,22 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         locations[x][y].setTurnSeen(currentTurn);
     }
     
+    public void addTemporaryInvalidLocation(int x, int y) {
+        temporaryInvalidLocations.add(new int[] {x, y});
+    }
+    
+    public void clearTemporaryInvalidLocations() {
+        temporaryInvalidLocations.clear();
+    }
+    
+    /**
+     * 
+     * @param x
+     * @param y
+     * @return Returns null if location is out of bounds.
+     */
     public AntWarsAIMapLocation getLocation(int x, int y) {
+        if (x < 0 || y < 0 || x >= maxX || y >= maxY) return null;
         return locations[x][y];
     }
 
@@ -88,7 +103,9 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction) {
         if (location == null) return new ArrayList();
         
-        Graph APGraph = makeAPGraph();
+        Graph APGraph = makeAPGraph(ant);
+        int antAP = ant.getActionPoints();
+        //Graph APGraph = makeAPGraph();
         AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
         
         
@@ -181,7 +198,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * @param thisAnt The ant you want to calcul
      * @param locations targets
      * @return moves...
-     * @deprecated 
+     * @deprecated use getFirstOneTurnMove() instead
      */
     @Deprecated
     public List<EAction> getMoves(IAntInfo thisAnt, List<ILocationInfo> locations) {
@@ -201,7 +218,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * @param location
      * @param direction
      * @return 
-     * @deprecated
+     * @deprecated use getFirstOneTurnMove() instead
      */
     @Deprecated
     public List<EAction> getMoves(IAntInfo ant, ILocationInfo location, int direction) {
@@ -387,7 +404,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * another Node with 1 EAction. The cost of the edge is equal to the cost 
      * of the EAction in Action Points (Hence AP Graph).
      */
-    private Graph makeAPGraph() {
+    private Graph makeAPGraph(IAntInfo ant) {
+        int turnCost = ant.getAntType().getActionCost(EAction.TurnLeft);
+        int backwardCost = ant.getAntType().getActionCost(EAction.MoveBackward);
+        int forwardCost = ant.getAntType().getActionCost(EAction.MoveForward);
         Graph APGraph = new Graph();
         
         //make nodes
@@ -417,22 +437,22 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
                 int y = loc.getY();
                 //direction 0/North/Up edge
                 if (y < maxY-1 && locations[x][y+1].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x][y+1], 0);
+                    makeExternalEdge(APGraph, loc, locations[x][y+1], 0, forwardCost, backwardCost);
                     //System.out.println("Adding external edges1");
                 }
                 //direction 2/South/Down edge
                 if (y > 0 && locations[x][y-1].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x][y-1], 2);
+                    makeExternalEdge(APGraph, loc, locations[x][y-1], 2, forwardCost, backwardCost);
                     //System.out.println("Adding external edges2");
                 }
                 //direction 1/East/Right edge
                 if (x < maxX-1 && locations[x+1][y].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x+1][y], 1);
+                    makeExternalEdge(APGraph, loc, locations[x+1][y], 1, forwardCost, backwardCost);
                     //System.out.println("Adding external edges3");
                 }
                 //direction 3/West/Left edge
                 if (x > 0 && locations[x-1][y].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x-1][y], 3);
+                    makeExternalEdge(APGraph, loc, locations[x-1][y], 3, forwardCost, backwardCost);
                     //System.out.println("Adding external edges3");
                 }
             }
@@ -442,11 +462,16 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
 
     /**
-     * Adds edges to 2 Nodes in different locations in a Graph, based on a 
+     * Adds edges between 2 Nodes in different locations in a Graph, based on a 
      * direction (forward). Hard to explain without visual stuff... 
      * This is used in the making of the AP Graph. It uses the EAction costs.
      */
-    private void makeExternalEdge(Graph graph, AntWarsAIMapLocation location, AntWarsAIMapLocation target, int forward) {
+    private void makeExternalEdge(Graph graph, 
+                                  AntWarsAIMapLocation location, 
+                                  AntWarsAIMapLocation target, 
+                                  int forward,
+                                  int forwardCost,
+                                  int backwardCost) {
         if (validLocation(target)) {
             int backward = (forward+2)%4;
             Node start = graph.getNode(location.getX(), location.getY(), forward);
@@ -461,13 +486,18 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     /**
      * Checks if a location is valid. A location is valid if it has been seen, 
      * is not filled with dirt and is not a rock (non existing). Used to check 
-     * if Nodes should be created for a location.
+     * if Nodes should be created for a location. 
+     * Checks if location is in temporaryInvalidLocations
      */
     private boolean validLocation(AntWarsAIMapLocation loc) {
-        return loc.getLocationInfo() != null && !loc.getLocationInfo().isFilled() && !loc.getLocationInfo().isRock();
+        ILocationInfo iLoc = loc.getLocationInfo();
+        return iLoc != null && 
+               !iLoc.isFilled() && 
+               !iLoc.isRock() &&
+               !temporaryInvalidLocations.contains(new int[] {loc.getX(), loc.getY()});
     }
     
-    //If you iterate over this object, it will give you a list of MapLocations
+    //If you iterate over this object, it will give you a list of AntWarsAIMapLocation
     @Override
     public Iterator<AntWarsAIMapLocation> iterator() {
         Iterator<AntWarsAIMapLocation> it = new Iterator<AntWarsAIMapLocation>() {

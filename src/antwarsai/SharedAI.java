@@ -5,7 +5,9 @@ import aiantwars.IAntInfo;
 import aiantwars.ILocationInfo;
 import antwarsairesources.AntWarsAIMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -15,7 +17,14 @@ public class SharedAI {
     protected static AntWarsAIMap sharedMap;
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
+    protected Map<Integer, IAntInfo> allyAnts = new HashMap<>();
+    protected static int[] startPos;
+    protected static int[] foodDepot;
+    protected static int[] worldMax;
     
+    protected void sharedOnHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
+        allyAnts.put(thisAnt.antID(), thisAnt);
+    }
     
     protected void sharedOnStartTurn(IAntInfo thisAnt, int turn) {
         currentTurn = turn; //change when getTurn is available
@@ -40,6 +49,6 @@ public class SharedAI {
     }
     
     public void sharedOnDeath(IAntInfo thisAnt) {
-        
+        allyAnts.remove(thisAnt.antID());
     }
 }
