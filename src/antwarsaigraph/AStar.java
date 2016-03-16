@@ -82,6 +82,7 @@ public class AStar {
             return res;
         }
         else {
+            //System.out.println("return null astar");
             return null;
         }
     }

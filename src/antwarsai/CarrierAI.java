@@ -165,13 +165,15 @@ public class CarrierAI extends SharedAI implements IAntAI {
         if (startPos[1] == 0) y = 1;
         if (startPos[1] == worldMax[1]) y = worldMax[1]-1;
         ILocationInfo tile4 = sharedMap.getLocation(x, y).getLocationInfo();
-        if (tile4.isFilled() && 
-            !tile4.isRock()) {
+        
+        if (tile4 == null ||
+            (tile4.isFilled() && 
+            !tile4.isRock())) {
             int direction = 0;
-            if (foodDepot[1]+1 == tile4.getY()) direction = 0;
-            if (foodDepot[0]+1 == tile4.getX()) direction = 1;
-            if (foodDepot[1]-1 == tile4.getY()) direction = 2;
-            if (foodDepot[0]-1 == tile4.getX()) direction = 3;
+            if (foodDepot[1]+1 == y) direction = 0;
+            if (foodDepot[0]+1 == x) direction = 1;
+            if (foodDepot[1]-1 == y) direction = 2;
+            if (foodDepot[0]-1 == x) direction = 3;
             
             if (thisLocation.getX() == foodDepot[0] &&
                 thisLocation.getY() == foodDepot[1] &&

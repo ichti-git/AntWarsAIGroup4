@@ -71,8 +71,8 @@ public class QueenAI extends SharedAI implements IAntAI {
         //egg.set(type, this);
         if (types.contains(nextEgg)) {
             if (nextEgg == EAntType.CARRIER) egg.set(nextEgg, new CarrierAI());
-            //if (nextEgg == EAntType.SCOUT) egg.set(nextEgg, new ScoutAI());
-            if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new PassAI());
+            if (nextEgg == EAntType.SCOUT) egg.set(nextEgg, new ScoutAI3());
+            if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new Warrior());
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
         }
         else {

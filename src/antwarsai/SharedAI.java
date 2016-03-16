@@ -21,6 +21,13 @@ public class SharedAI {
     protected static int[] startPos;
     protected static int[] foodDepot;
     protected static int[] worldMax;
+    protected static HashMap<Integer, ILocationInfo> locQueen = new HashMap<>();
+    
+    public void addLocBadQueen(ILocationInfo info)
+    {
+        locQueen.put(info.getAnt().getTeamInfo().getTeamID(), info);
+        
+    }
     
     protected void sharedOnHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
         allyAnts.put(thisAnt.antID(), thisAnt);

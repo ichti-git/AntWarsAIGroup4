@@ -21,7 +21,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     private final AntWarsAIMapLocation[][] locations;
     private final int maxX;
     private final int maxY;
-    private List<int[]> temporaryInvalidLocations = new ArrayList<>();
+    private List<ILocationInfo> temporaryInvalidLocations = new ArrayList<>();
     //private final int turnCost = 2;
     //private final int forwardCost = 3;
     //private final int backwardCost = 4;
@@ -44,10 +44,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         locations[x][y].setTurnSeen(currentTurn);
     }
     
-    public void addTemporaryInvalidLocation(int x, int y) {
-        temporaryInvalidLocations.add(new int[] {x, y});
-    }
-    
+//    public void addTemporaryInvalidLocation(int x, int y) {
+//        temporaryInvalidLocations.add(new int[] {x, y});
+//    }
+//    
     public void clearTemporaryInvalidLocations() {
         temporaryInvalidLocations.clear();
     }
@@ -63,6 +63,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return locations[x][y];
     }
 
+    public AntWarsAIMapLocation getLocation(ILocationInfo loc) {
+        return getLocation(loc.getX(), loc.getY());
+    }
+    
     public List<ILocationInfo> getLocationsWithFood() {
         List<ILocationInfo> food = new ArrayList<>();
         for (AntWarsAIMapLocation loc : this) {
@@ -128,6 +132,13 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         */
         
         List<Node> OTMPath = OTMAlgorithm.findShortestPath(start, goal);
+        if (OTMPath == null) {
+            List<EAction> emptyPath = new ArrayList<>();
+            emptyPath.add(EAction.Pass);
+            List<List<EAction>> emptyEmptyPath = new ArrayList<>();
+            emptyEmptyPath.add(emptyPath);
+            return emptyEmptyPath;
+        }
         return PathToActionList(OTMPath, APAlgorithm);
     }
     
@@ -312,6 +323,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         Node cur = iterator.next();
         Node prev;
         while (iterator.hasNext()) {
+            //System.out.println(cur.getX()+","+cur.getY()+","+cur.getDir());
             prev = iterator.next();
             actions.add(nodesToAction(cur, prev));
             cur = prev;
@@ -494,7 +506,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return iLoc != null && 
                !iLoc.isFilled() && 
                !iLoc.isRock() &&
-               !temporaryInvalidLocations.contains(new int[] {loc.getX(), loc.getY()});
+               !temporaryInvalidLocations.contains(loc.getLocationInfo());
     }
     
     //If you iterate over this object, it will give you a list of AntWarsAIMapLocation
@@ -550,6 +562,13 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         }
         return movesList;
     }
+
+    public void addTemporaryInvalidLocation(ILocationInfo get) {
+        temporaryInvalidLocations.add(get);
+                
+    }
+
+    
     
     
     
