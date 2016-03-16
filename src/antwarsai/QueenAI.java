@@ -57,7 +57,7 @@ public class QueenAI extends SharedAI implements IAntAI {
                 action = stateFortressMode(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
             default:
-                System.out.println("state not found");
+                //System.out.println("state not found");
                 action = EAction.Pass;
         }
         return action;
@@ -76,7 +76,7 @@ public class QueenAI extends SharedAI implements IAntAI {
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
         }
         else {
-            System.out.println("Couldn't fine egg type?!");
+            //System.out.println("Couldn't fine egg type?!");
         }
         
     }
@@ -137,14 +137,14 @@ public class QueenAI extends SharedAI implements IAntAI {
                 if (layEggLocation[2] == 2) foodY--;
                 if (layEggLocation[2] == 3) foodX--;
                 foodDepot = new int[] {foodX, foodY};
-                System.out.println("foodDepot: {"+foodX+","+foodY+"}");
+                //System.out.println("foodDepot: {"+foodX+","+foodY+"}");
                 nextEgg = EAntType.CARRIER;
                 action = EAction.LayEgg;
                 state = QueenState.FortressMode;
             }
             else {
                 
-                System.out.println("Waiting to lay an egg");
+                //System.out.println("Waiting to lay an egg");
                 action = EAction.Pass;
             }
         } 
@@ -153,7 +153,7 @@ public class QueenAI extends SharedAI implements IAntAI {
                 action = moves.remove(0);
             }
             else {
-                System.out.println("found impossible action" + moves.get(0));
+                //System.out.println("found impossible action" + moves.get(0));
                 action = EAction.Pass;
             }
         }
@@ -168,7 +168,7 @@ public class QueenAI extends SharedAI implements IAntAI {
         EAction action;
         
         if (foodDepot == null) {
-            System.out.println("test");
+            //System.out.println("test");
             return EAction.Pass;
         }
         if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
@@ -184,7 +184,7 @@ public class QueenAI extends SharedAI implements IAntAI {
             }
         }
         else if (thisLocation.getX() == startPos[0] && thisLocation.getY() == startPos[1]) {
-            if (thisAnt.getFoodLoad() > thisAnt.getAntType().getLayEggCost()) {
+            if (thisAnt.getFoodLoad() > thisAnt.getAntType().getLayEggCost()+allyAnts.size()*2) {
                 if (nextEgg == EAntType.CARRIER) nextEgg = EAntType.SCOUT;
                 else if (nextEgg == EAntType.SCOUT) nextEgg = EAntType.WARRIOR;
                 //nextEgg = EAntType.WARRIOR;
@@ -229,7 +229,7 @@ public class QueenAI extends SharedAI implements IAntAI {
                     action = moves.remove(0);
                 }
                 else {
-                    System.out.println("found impossible action" + moves.get(0));
+                    //System.out.println("found impossible action" + moves.get(0));
                     action = EAction.Pass;
                 }
 
@@ -262,7 +262,7 @@ public class QueenAI extends SharedAI implements IAntAI {
             else if (thisAnt.getActionPoints() == thisAnt.getAntType().getMaxActionPoints()) {
                 List<ILocationInfo> foodLocations = sharedMap.getLocationsWithFood();
                 if (foodLocations.isEmpty()) {
-                    System.out.println("No locations with food found");
+                    //System.out.println("No locations with food found");
                     spinPlease++;
                     action = EAction.Pass;
                 }

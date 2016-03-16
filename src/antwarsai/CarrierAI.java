@@ -42,7 +42,7 @@ public class CarrierAI extends SharedAI implements IAntAI {
                 action = stateMakeStartSquare(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
             default:
-                System.out.println("state not found");
+                //System.out.println("state not found");
                 action = EAction.Pass;
         }
         return action;
@@ -71,27 +71,27 @@ public class CarrierAI extends SharedAI implements IAntAI {
         EAction action = EAction.Pass;
         if (thisLocation.getX() == foodDepot[0] && thisLocation.getY() == foodDepot[1]) {
             if (thisAnt.getFoodLoad() == 0) {
-                System.out.println("No food to drop, changing state (This shouldn't be reached)");
+                //System.out.println("No food to drop, changing state (This shouldn't be reached)");
                 state = CarrierState.FindFood;
             }
             else if (possibleActions.contains(EAction.DropFood)) {
                 action = EAction.DropFood;
                 if (thisAnt.getFoodLoad() == 1) {
-                    System.out.println("Out of food, changing state");
+                    //System.out.println("Out of food, changing state");
                     state = CarrierState.FindFood;
                 }
             }
             else {
-                System.out.println("Can't drop food, waiting to drop food");
+                //System.out.println("Can't drop food, waiting to drop food");
             }
         }
         else if (moves.isEmpty()) {
-            System.out.println("Finding path to food drop");
+            //System.out.println("Finding path to food drop");
             moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo());
             action = moves.remove(0);
         }
         else {
-            System.out.println("Continuing move orders");
+            //System.out.println("Continuing move orders");
             action = moves.remove(0);
         }
         return action;
@@ -105,30 +105,30 @@ public class CarrierAI extends SharedAI implements IAntAI {
         if (!moves.isEmpty()) {
                 if (possibleActions.contains(moves.get(0))) {
                     action = moves.remove(0);
-                    System.out.println("doing move order: " + action);
+                    //System.out.println("doing move order: " + action);
                 }
                 else {
-                    System.out.println("found impossible action: " + moves.get(0));
+                    //System.out.println("found impossible action: " + moves.get(0));
                     action = EAction.Pass;
                 }
         }
         else if (possibleActions.contains(EAction.PickUpFood) && 
                  !(thisLocation.getX() == foodDepot[0] && 
                    thisLocation.getY() == foodDepot[1])) {
-            System.out.println("picking up food");
+            //System.out.println("picking up food");
             action = EAction.PickUpFood;
             if (thisAnt.getFoodLoad() > foodLoadReturn) {
                 foodLoadReturn += 2;
                 state = CarrierState.DropFood;
-                System.out.println("changing to drop food");
+                //System.out.println("changing to drop food");
             }
         }
         else if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
-            System.out.println("eat food    ");
+            //System.out.println("eat food    ");
             action = EAction.EatFood;
         }
         else if (spinPlease > 0 && possibleActions.contains(EAction.TurnLeft)) {
-            System.out.println("spin");
+            //System.out.println("spin");
             action = EAction.TurnLeft;
             spinPlease--;
         }
@@ -137,19 +137,19 @@ public class CarrierAI extends SharedAI implements IAntAI {
             ILocationInfo foodDrop = sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo();
             foodLocations.remove(foodDrop);
             if (foodLocations.isEmpty()) {
-                System.out.println("No locations with food found");
+                //System.out.println("No locations with food found");
                 spinPlease++;
                 action = EAction.Pass;
             }
             else {
-                System.out.println("found food. Moving to food");
+                //System.out.println("found food. Moving to food");
                 moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
                 action = moves.remove(0);
                 if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 4;
             }
         }
         else {
-            System.out.println("Pass?");
+            //System.out.println("Pass?");
             action = EAction.Pass;
         }    
         return action;
