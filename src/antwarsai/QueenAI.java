@@ -15,15 +15,15 @@ import java.util.Random;
  * @author ichti (Simon T)
  */
 public class QueenAI extends SharedAI implements IAntAI {
+
     private final Random rnd = new Random();
-    private QueenState state = QueenState.FindFood;
-    /* 
-     * Queen states:
-     *  - Start of game
-     *  - After spawning first ant (carrier ant)
-     *  - After spawning 2nd ant (scout ant)
-     *  - After spawning 3rd ant (defender ant?)
-     *  - Others? like being attacked.
+    private QueenState state = QueenState.Test;
+    //private QueenState state = QueenState.FindFood;
+
+    /*
+     * Queen states: - Start of game - After spawning first ant (carrier ant) -
+     * After spawning 2nd ant (scout ant) - After spawning 3rd ant (defender
+     * ant?) - Others? like being attacked.
      */
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
@@ -32,8 +32,8 @@ public class QueenAI extends SharedAI implements IAntAI {
         //If more than 1 queen is allowed, change so a new queen doesn't make 
         //a new sharedMap
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
-        startPos = new int[] {thisLocation.getX(), thisLocation.getY()};
-        worldMax = new int[] {worldSizeX-1, worldSizeY-1};
+        startPos = new int[]{thisLocation.getX(), thisLocation.getY()};
+        worldMax = new int[]{worldSizeX - 1, worldSizeY - 1};
     }
 
     @Override
@@ -41,12 +41,11 @@ public class QueenAI extends SharedAI implements IAntAI {
         sharedOnStartTurn(thisAnt, turn);
     }
 
-    
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
         EAction action;
-        switch(state) {
+        switch (state) {
             case FindFood:
                 action = stateFindFood(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
@@ -56,6 +55,9 @@ public class QueenAI extends SharedAI implements IAntAI {
             case FortressMode:
                 action = stateFortressMode(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
+            case Test:
+                action = stateTest(thisAnt);
+                break;
             default:
                 //System.out.println("state not found");
                 action = EAction.Pass;
@@ -64,21 +66,28 @@ public class QueenAI extends SharedAI implements IAntAI {
     }
 
     EAntType nextEgg;
+
     @Override
     public void onLayEgg(IAntInfo thisAnt, List<EAntType> types, IEgg egg) {
         //EAntType type = types.get(rnd.nextInt(types.size())); 
         //System.out.println("ID: " + thisAnt.antID() + " onLayEgg: " + type);
         //egg.set(type, this);
         if (types.contains(nextEgg)) {
-            if (nextEgg == EAntType.CARRIER) egg.set(nextEgg, new CarrierAI());
-            if (nextEgg == EAntType.SCOUT) egg.set(nextEgg, new ScoutAI3());
-            if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new Warrior());
+            if (nextEgg == EAntType.CARRIER) {
+                egg.set(nextEgg, new CarrierAI());
+            }
+            if (nextEgg == EAntType.SCOUT) {
+                egg.set(nextEgg, new ScoutAI3());
+            }
+            if (nextEgg == EAntType.WARRIOR) {
+                egg.set(nextEgg, new Warrior());
+            }
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
         }
         else {
-            //System.out.println("Couldn't fine egg type?!");
+            //System.out.println("Couldn't find egg type?!");
         }
-        
+
     }
 
     @Override
@@ -90,64 +99,79 @@ public class QueenAI extends SharedAI implements IAntAI {
     public void onDeath(IAntInfo thisAnt) {
         sharedOnDeath(thisAnt);
     }
+
+    private EAction stateTest(IAntInfo thisAnt) {
+        System.out.println("test1");
+        return sharedMap.getFirstOneTurnMove(thisAnt, 7, 7, true).get(0);
+    }
     
     private EAction stateLayCarrier(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
+        
         int[] layEggLocation;
         int startX = startPos[0];
         int startY = startPos[1];
-        if (sharedMap.getLocation(startX, startY+1) != null &&
-            sharedMap.getLocation(startX, startY+1).getLocationInfo() != null &&
-            !sharedMap.getLocation(startX, startY+1).getLocationInfo().isFilled() &&
-            sharedMap.getLocation(startX, startY+2).getLocationInfo() != null &&
-            !sharedMap.getLocation(startX, startY+2).getLocationInfo().isFilled()) {
-            layEggLocation = new int[] {startX, startY, 0};
+        if (sharedMap.getLocation(startX, startY + 1) != null
+                && sharedMap.getLocation(startX, startY + 1).getLocationInfo() != null
+                && !sharedMap.getLocation(startX, startY + 1).getLocationInfo().isFilled()
+                && sharedMap.getLocation(startX, startY + 2).getLocationInfo() != null
+                && !sharedMap.getLocation(startX, startY + 2).getLocationInfo().isFilled()) {
+            layEggLocation = new int[]{startX, startY, 0};
         }
-        else if (sharedMap.getLocation(startX, startY-1) != null &&
-                 sharedMap.getLocation(startX, startY-1).getLocationInfo() != null &&
-                 !sharedMap.getLocation(startX, startY-1).getLocationInfo().isFilled() &&
-                 sharedMap.getLocation(startX, startY-2).getLocationInfo() != null &&
-                 !sharedMap.getLocation(startX, startY-2).getLocationInfo().isFilled()) {
-            layEggLocation = new int[] {startX, startY, 2};
+        else if (sharedMap.getLocation(startX, startY - 1) != null
+                && sharedMap.getLocation(startX, startY - 1).getLocationInfo() != null
+                && !sharedMap.getLocation(startX, startY - 1).getLocationInfo().isFilled()
+                && sharedMap.getLocation(startX, startY - 2).getLocationInfo() != null
+                && !sharedMap.getLocation(startX, startY - 2).getLocationInfo().isFilled()) {
+            layEggLocation = new int[]{startX, startY, 2};
         }
-        else if (sharedMap.getLocation(startX-1, startY) != null &&
-                 sharedMap.getLocation(startX-1, startY).getLocationInfo() != null &&
-                 !sharedMap.getLocation(startX-1, startY).getLocationInfo().isFilled() &&
-                 sharedMap.getLocation(startX-2, startY).getLocationInfo() != null &&
-                 !sharedMap.getLocation(startX-2, startY).getLocationInfo().isFilled()) {
-            layEggLocation = new int[] {startX, startY, 3};
+        else if (sharedMap.getLocation(startX - 1, startY) != null
+                && sharedMap.getLocation(startX - 1, startY).getLocationInfo() != null
+                && !sharedMap.getLocation(startX - 1, startY).getLocationInfo().isFilled()
+                && sharedMap.getLocation(startX - 2, startY).getLocationInfo() != null
+                && !sharedMap.getLocation(startX - 2, startY).getLocationInfo().isFilled()) {
+            layEggLocation = new int[]{startX, startY, 3};
         }
-        else if (sharedMap.getLocation(startX+1, startY) != null &&
-                 sharedMap.getLocation(startX+1, startY).getLocationInfo() != null &&
-                 !sharedMap.getLocation(startX+1, startY).getLocationInfo().isFilled()) {
-            layEggLocation = new int[] {startX, startY, 1};
+        else if (sharedMap.getLocation(startX + 1, startY) != null
+                && sharedMap.getLocation(startX + 1, startY).getLocationInfo() != null
+                && !sharedMap.getLocation(startX + 1, startY).getLocationInfo().isFilled()) {
+            layEggLocation = new int[]{startX, startY, 1};
         }
         else {
-            layEggLocation = new int[] {startX, startY, 3};
+            layEggLocation = new int[]{startX, startY, 3};
         }
-        
+
         EAction action;
-        if (layEggLocation[2] == thisAnt.getDirection() &&
-            layEggLocation[0] == thisAnt.getLocation().getX() &&
-            layEggLocation[1] == thisAnt.getLocation().getY()) {
+        if (layEggLocation[2] == thisAnt.getDirection()
+                && layEggLocation[0] == thisAnt.getLocation().getX()
+                && layEggLocation[1] == thisAnt.getLocation().getY()
+                && thisAnt.getAntType().getActionCost(EAction.LayEgg) < thisAnt.getFoodLoad()) {
             if (possibleActions.contains(EAction.LayEgg)) {
                 int foodX = thisLocation.getX();
                 int foodY = thisLocation.getY();
-                if (layEggLocation[2] == 0) foodY++;
-                if (layEggLocation[2] == 1) foodX++;
-                if (layEggLocation[2] == 2) foodY--;
-                if (layEggLocation[2] == 3) foodX--;
-                foodDepot = new int[] {foodX, foodY};
+                if (layEggLocation[2] == 0) {
+                    foodY++;
+                }
+                if (layEggLocation[2] == 1) {
+                    foodX++;
+                }
+                if (layEggLocation[2] == 2) {
+                    foodY--;
+                }
+                if (layEggLocation[2] == 3) {
+                    foodX--;
+                }
+                foodDepot = new int[]{foodX, foodY};
                 //System.out.println("foodDepot: {"+foodX+","+foodY+"}");
                 nextEgg = EAntType.CARRIER;
                 action = EAction.LayEgg;
                 state = QueenState.FortressMode;
             }
             else {
-                
+
                 //System.out.println("Waiting to lay an egg");
                 action = EAction.Pass;
             }
-        } 
+        }
         else if (!moves.isEmpty()) {
             if (possibleActions.contains(moves.get(0))) {
                 action = moves.remove(0);
@@ -162,20 +186,21 @@ public class QueenAI extends SharedAI implements IAntAI {
             action = moves.remove(0);
         }
         return action;
+        
     }
 
     private EAction stateFortressMode(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         EAction action;
-        
+
         if (foodDepot == null) {
             //System.out.println("test");
             return EAction.Pass;
         }
         if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
-                action = EAction.EatFood;
+            action = EAction.EatFood;
         }
         else if (thisLocation.getX() == foodDepot[0] && thisLocation.getY() == foodDepot[1]) {
-            if (thisLocation.getFoodCount() > 0) {
+            if (thisLocation.getFoodCount() > 0 && possibleActions.contains(EAction.PickUpFood)) {
                 action = EAction.PickUpFood;
             }
             else {
@@ -184,13 +209,26 @@ public class QueenAI extends SharedAI implements IAntAI {
             }
         }
         else if (thisLocation.getX() == startPos[0] && thisLocation.getY() == startPos[1]) {
-            if (thisAnt.getFoodLoad() > thisAnt.getAntType().getLayEggCost()+allyAnts.size()*2) {
-                if (nextEgg == EAntType.CARRIER) nextEgg = EAntType.SCOUT;
-                else if (nextEgg == EAntType.SCOUT) nextEgg = EAntType.WARRIOR;
+            if (thisAnt.getFoodLoad() - thisAnt.getAntType().getLayEggCost() > 0) {
+                switch (allyAnts.size()) {
+                    case 0:
+                        nextEgg = EAntType.CARRIER;
+                        break;
+                    case 1:
+                        nextEgg = EAntType.SCOUT;
+                        break;
+                    case 2:
+                        nextEgg = EAntType.WARRIOR;
+                        break;
+                    default:
+                        nextEgg = EAntType.WARRIOR;
+                        break;
+                }
                 //nextEgg = EAntType.WARRIOR;
                 action = EAction.LayEgg;
             }
-            else if (sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo().getFoodCount() > 5) {
+            else if (sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo().getFoodCount() > 5
+                    && thisAnt.getFoodLoad() < thisAnt.getAntType().getMaxFoodLoad()) {
                 moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo());
                 action = moves.remove(0);
                 //action = EAction.Pass;
@@ -205,77 +243,82 @@ public class QueenAI extends SharedAI implements IAntAI {
             }
             action = moves.remove(0);
         }
-        
+
         return action;
-    }
-    
-    public enum QueenState {
-        FindFood, 
-        LayCarrier, 
-        LayScout, 
-        LayDefender, 
-        LayWarrior,
-        FortressMode
         
     }
-    
+
+    public enum QueenState {
+        FindFood,
+        LayCarrier,
+        LayScout,
+        LayDefender,
+        LayWarrior,
+        FortressMode,
+        Test
+
+    }
+
     int spinPlease = 4; //Increment to avoid spin, Decrement to spin
     //Starting state. Find food until you can lay an egg.
-    private EAction stateFindFood(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) { 
-        
+
+    private EAction stateFindFood(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
+
         EAction action;
         if (!moves.isEmpty()) {
-                if (possibleActions.contains(moves.get(0))) {
-                    action = moves.remove(0);
-                }
-                else {
-                    //System.out.println("found impossible action" + moves.get(0));
-                    action = EAction.Pass;
-                }
-
-            }
-            else if (possibleActions.contains(EAction.PickUpFood)) {
-                action = EAction.PickUpFood;
-                
-                if (thisAnt.getFoodLoad()+1 >= thisAnt.getAntType().getActionCost(EAction.LayEgg)) {
-                    if (allyAnts.size() == 1) {
-                        state = QueenState.LayCarrier;
-                    }
-                    if (allyAnts.size() == 2) {
-                        state = QueenState.LayScout;
-                    }
-                    if (allyAnts.size() == 3) {
-                        state = QueenState.LayDefender;
-                    }
-                    if (allyAnts.size() > 3) {
-                        state = QueenState.LayWarrior;
-                    }
-                }
-            }
-            else if (thisAnt.getHitPoints() < 10) {
-                action = EAction.EatFood;
-            }
-            else if (spinPlease > 0 && possibleActions.contains(EAction.TurnLeft)) {
-                action = EAction.TurnLeft;
-                spinPlease--;
-            }
-            else if (thisAnt.getActionPoints() == thisAnt.getAntType().getMaxActionPoints()) {
-                List<ILocationInfo> foodLocations = sharedMap.getLocationsWithFood();
-                if (foodLocations.isEmpty()) {
-                    //System.out.println("No locations with food found");
-                    spinPlease++;
-                    action = EAction.Pass;
-                }
-                else {
-                    moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
-                    action = moves.remove(0);
-                    if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 4;
-                }
+            if (possibleActions.contains(moves.get(0))) {
+                action = moves.remove(0);
             }
             else {
-                //System.out.println("Pass?");
+                //System.out.println("found impossible action" + moves.get(0));
                 action = EAction.Pass;
-            }    
+            }
+
+        }
+        else if (possibleActions.contains(EAction.PickUpFood)) {
+            action = EAction.PickUpFood;
+
+            if (thisAnt.getFoodLoad() > thisAnt.getAntType().getActionCost(EAction.LayEgg)) {
+                if (allyAnts.size() == 1) {
+                    state = QueenState.LayCarrier;
+                }
+                if (allyAnts.size() == 2) {
+                    state = QueenState.LayScout;
+                }
+                if (allyAnts.size() == 3) {
+                    state = QueenState.LayDefender;
+                }
+                if (allyAnts.size() > 3) {
+                    state = QueenState.LayWarrior;
+                }
+            }
+        }
+        else if (thisAnt.getHitPoints() < 10) {
+            action = EAction.EatFood;
+        }
+        else if (spinPlease > 0 && possibleActions.contains(EAction.TurnLeft)) {
+            action = EAction.TurnLeft;
+            spinPlease--;
+        }
+        else if (thisAnt.getActionPoints() == thisAnt.getAntType().getMaxActionPoints()) {
+            List<ILocationInfo> foodLocations = sharedMap.getLocationsWithFood();
+            if (foodLocations.isEmpty()) {
+                //System.out.println("No locations with food found");
+                spinPlease++;
+                action = EAction.Pass;
+            }
+            else {
+                moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
+                action = moves.remove(0);
+                if (action == EAction.MoveForward || action == EAction.MoveBackward) {
+                    spinPlease = 4;
+                }
+            }
+        }
+        else {
+            //System.out.println("Pass?");
+            action = EAction.Pass;
+        }
         return action;
     }
 }

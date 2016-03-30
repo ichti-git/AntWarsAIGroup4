@@ -65,7 +65,7 @@ public class Warrior extends SharedAI implements IAntAI {
                 locQueen.remove(entry.getKey());
             }
         }
-        System.out.println(locQueen);
+        //System.out.println(locQueen);
         if (locQueen.isEmpty()) {
             //System.out.println("I am in if locQueen");
             action = choseHowToMoveAnt(possibleActions);

@@ -70,7 +70,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     public List<ILocationInfo> getLocationsWithFood() {
         List<ILocationInfo> food = new ArrayList<>();
         for (AntWarsAIMapLocation loc : this) {
-            if (validLocation(loc) && loc.getLocationInfo().getFoodCount() > 0) food.add(loc.getLocationInfo());
+            if (validLocation(loc, false) && loc.getLocationInfo().getFoodCount() > 0) food.add(loc.getLocationInfo());
         }
         return food;
     }
@@ -88,33 +88,101 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      */
     
     public List<EAction> getFirstOneTurnMove(List<List<EAction>> OTMList) {
-        return OTMList.get(0);
+        if (OTMList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        else {
+            return OTMList.get(0);
+        }
     }
     
     public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location, int direction) {
-        return getFirstOneTurnMove(getOneTurnMoves(ant, location, direction));
+        return getFirstOneTurnMove(ant, location, direction, false);
+    }
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location, int direction, boolean useBlanks) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, location, direction, useBlanks));
     }
     
     public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location) {
-        return getFirstOneTurnMove(getOneTurnMoves(ant, location));
+        return getFirstOneTurnMove(ant, location, false);
+    }
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, ILocationInfo location, boolean useBlanks) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, location, useBlanks));
     }
     
     public List<EAction> getFirstOneTurnMove(IAntInfo ant, List<ILocationInfo> locations) {
-        return getFirstOneTurnMove(getOneTurnMoves(ant, locations));
+        return getFirstOneTurnMove(ant, locations, false);
+    }
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, List<ILocationInfo> locations, boolean useBlanks) {
+        return getFirstOneTurnMove(getOneTurnMoves(ant, locations, useBlanks));
     }
     
+    public List<EAction> getFirstOneTurnMove(IAntInfo ant, int x, int y, boolean useBlanks) {
+        System.out.println("test2");
+        return getFirstOneTurnMove(getOneTurnMoves(ant, x, y, useBlanks));
+    } 
     
-    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction) {
-        if (location == null) return new ArrayList();
-        
-        Graph APGraph = makeAPGraph(ant);
+    
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, int direction) {
+        return getOneTurnMoves(ant, x, y, direction, false);
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, int direction, boolean useBlanks) {
+        System.out.println("test4");
+        if (!useBlanks && getLocation(x,y) == null) return new ArrayList();
+        System.out.println("test5");
+        Graph APGraph = makeAPGraph(ant, useBlanks);
         int antAP = ant.getActionPoints();
         //Graph APGraph = makeAPGraph();
         AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
         
         
         int maxCost = ant.getAntType().getMaxActionPoints();
-        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost);
+        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost, useBlanks);
+        //AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
+        AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
+        
+        Node start = OTMGraph.getNode(ant.getLocation().getX(), ant.getLocation().getY(), ant.getDirection());
+        Node goal = OTMGraph.getNode(x, y, direction);
+        
+        
+        //Debug stuff
+        /*
+        System.out.println("______________________");
+        System.out.println("Current location: "+ant.getLocation().getX()+","+ant.getLocation().getY()+","+ant.getDirection());
+        System.out.println("Target location: "+location.getX()+","+location.getY());
+        //System.out.println("HEYO " + OTMGraph.getEdges());
+        System.out.println("Trying "+nts(start)+" " + nts(goal));
+        */
+        
+        List<Node> OTMPath = OTMAlgorithm.findShortestPath(start, goal);
+        if (OTMPath == null) {
+            List<EAction> emptyPath = new ArrayList<>();
+            emptyPath.add(EAction.Pass);
+            List<List<EAction>> emptyEmptyPath = new ArrayList<>();
+            emptyEmptyPath.add(emptyPath);
+            return emptyEmptyPath;
+        }
+        return PathToActionList(OTMPath, APAlgorithm);
+    }
+    
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction) {
+        return getOneTurnMoves(ant, location, direction, false);
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction, boolean useBlanks) {
+        if (location == null) return new ArrayList();
+        
+        Graph APGraph = makeAPGraph(ant, useBlanks);
+        int antAP = ant.getActionPoints();
+        //Graph APGraph = makeAPGraph();
+        AStar APAlgorithm = new AStar(APGraph, new ZeroHeuristic());
+        
+        
+        int maxCost = ant.getAntType().getMaxActionPoints();
+        Graph OTMGraph = makeOTMGraph(APAlgorithm, maxCost, useBlanks);
         //AStar OTMAlgorithm = new AStar(OTMGraph, new ZeroHeuristic());
         AStar OTMAlgorithm = new AStar(OTMGraph, new ManhattanHeuristic());
         
@@ -143,10 +211,14 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location) {
+        return getOneTurnMoves(ant, location, false);
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, boolean useBlanks) {
         int cost = Integer.MAX_VALUE;
         List<List<EAction>> best = null;
         for (int i = 0; i < 4; i++) {
-            List<List<EAction>> OTM = getOneTurnMoves(ant, location, i);
+            List<List<EAction>> OTM = getOneTurnMoves(ant, location, i, useBlanks);
             if (OTM.size() < cost) {
                 best = OTM;
             }
@@ -154,11 +226,29 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return best;
     }
     
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, boolean useBlanks) {
+        System.out.println("test3");
+        int cost = Integer.MAX_VALUE;
+        List<List<EAction>> best = null;
+        for (int i = 0; i < 4; i++) {
+            List<List<EAction>> OTM = getOneTurnMoves(ant, x, y, i, useBlanks);
+            if (OTM.size() < cost) {
+                best = OTM;
+            }
+        }
+        return best;
+    }
+    
+    
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, List<ILocationInfo> locations) {
+        return getOneTurnMoves(ant, locations, false);
+    }
+    
+    public List<List<EAction>> getOneTurnMoves(IAntInfo ant, List<ILocationInfo> locations, boolean useBlanks) {
         int cost = Integer.MAX_VALUE;
         List<List<EAction>> best = null;
         for (ILocationInfo location : locations) {
-            List<List<EAction>> OTM = getOneTurnMoves(ant, location);
+            List<List<EAction>> OTM = getOneTurnMoves(ant, location, useBlanks);
             if (OTM.size() < cost) {
                 best = OTM;
             }
@@ -178,15 +268,24 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location, int direction) {
-        return getMovesList(getOneTurnMoves(ant, location, direction));
+        return getMovesList(ant, location, direction, false);
+    }
+    public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location, int direction, boolean useBlanks) {
+        return getMovesList(getOneTurnMoves(ant, location, direction, useBlanks));
     }
     
     public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location) {
-        return getMovesList(getOneTurnMoves(ant, location));
+        return getMovesList(ant, location, false);
+    }
+    public List<EAction> getMovesList(IAntInfo ant, ILocationInfo location, boolean useBlanks) {
+        return getMovesList(getOneTurnMoves(ant, location, useBlanks));
     }
     
     public List<EAction> getMovesList(IAntInfo ant, List<ILocationInfo> locations) {
-        return getMovesList(getOneTurnMoves(ant, locations));
+        return getMovesList(ant, locations, false);
+    }
+    public List<EAction> getMovesList(IAntInfo ant, List<ILocationInfo> locations, boolean useBlanks) {
+        return getMovesList(getOneTurnMoves(ant, locations, useBlanks));
     }
     
     /* TODO
@@ -377,10 +476,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * in 1 turn (hence One Turn Move). All edges will then have a cost of 1 
      * (1 turn). Makes sense...?
      */
-    private Graph makeOTMGraph(AStar APAlgorithm, int maxCost) {
+    private Graph makeOTMGraph(AStar APAlgorithm, int maxCost, boolean useBlanks) {
         Graph OTMGraph = new Graph();
         for (AntWarsAIMapLocation loc : this) {
-            if (validLocation(loc)) {
+            if (validLocation(loc, useBlanks)) {
                 //System.out.println("OTMGraph: Adding "+loc.getX()+","+loc.getY());
                 Node north = OTMGraph.createNode(loc.getX(), loc.getY(), 0);
                 Node east = OTMGraph.createNode(loc.getX(), loc.getY(), 1);
@@ -416,7 +515,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * another Node with 1 EAction. The cost of the edge is equal to the cost 
      * of the EAction in Action Points (Hence AP Graph).
      */
-    private Graph makeAPGraph(IAntInfo ant) {
+    private Graph makeAPGraph(IAntInfo ant, boolean useBlanks) {
         int turnCost = ant.getAntType().getActionCost(EAction.TurnLeft);
         int backwardCost = ant.getAntType().getActionCost(EAction.MoveBackward);
         int forwardCost = ant.getAntType().getActionCost(EAction.MoveForward);
@@ -424,7 +523,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         
         //make nodes
         for (AntWarsAIMapLocation loc : this) {
-            if (validLocation(loc)) {
+            if (validLocation(loc, useBlanks)) {
                 Node north = APGraph.createNode(loc.getX(), loc.getY(), 0);
                 Node east = APGraph.createNode(loc.getX(), loc.getY(), 1);
                 Node south = APGraph.createNode(loc.getX(), loc.getY(), 2);
@@ -443,28 +542,28 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         }
         //edges externally
         for (AntWarsAIMapLocation loc : this) {
-            if (validLocation(loc)) {
+            if (validLocation(loc, useBlanks)) {
                 
                 int x = loc.getX();
                 int y = loc.getY();
                 //direction 0/North/Up edge
-                if (y < maxY-1 && locations[x][y+1].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x][y+1], 0, forwardCost, backwardCost);
+                if (y < maxY-1 && validLocation(locations[x][y+1], useBlanks)) {
+                    makeExternalEdge(APGraph, loc, locations[x][y+1], 0, forwardCost, backwardCost, useBlanks);
                     //System.out.println("Adding external edges1");
                 }
                 //direction 2/South/Down edge
-                if (y > 0 && locations[x][y-1].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x][y-1], 2, forwardCost, backwardCost);
+                if (y > 0 && validLocation(locations[x][y-1], useBlanks)) {
+                    makeExternalEdge(APGraph, loc, locations[x][y-1], 2, forwardCost, backwardCost, useBlanks);
                     //System.out.println("Adding external edges2");
                 }
                 //direction 1/East/Right edge
-                if (x < maxX-1 && locations[x+1][y].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x+1][y], 1, forwardCost, backwardCost);
+                if (x < maxX-1 && validLocation(locations[x+1][y], useBlanks)) {
+                    makeExternalEdge(APGraph, loc, locations[x+1][y], 1, forwardCost, backwardCost, useBlanks);
                     //System.out.println("Adding external edges3");
                 }
                 //direction 3/West/Left edge
-                if (x > 0 && locations[x-1][y].getLocationInfo() != null) {
-                    makeExternalEdge(APGraph, loc, locations[x-1][y], 3, forwardCost, backwardCost);
+                if (x > 0 && validLocation(locations[x-1][y], useBlanks)) {
+                    makeExternalEdge(APGraph, loc, locations[x-1][y], 3, forwardCost, backwardCost, useBlanks);
                     //System.out.println("Adding external edges3");
                 }
             }
@@ -483,8 +582,9 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
                                   AntWarsAIMapLocation target, 
                                   int forward,
                                   int forwardCost,
-                                  int backwardCost) {
-        if (validLocation(target)) {
+                                  int backwardCost,
+                                  boolean useBlanks) {
+        if (validLocation(target, useBlanks)) {
             int backward = (forward+2)%4;
             Node start = graph.getNode(location.getX(), location.getY(), forward);
             Node end = graph.getNode(target.getX(), target.getY(), forward);
@@ -501,12 +601,17 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
      * if Nodes should be created for a location. 
      * Checks if location is in temporaryInvalidLocations
      */
-    private boolean validLocation(AntWarsAIMapLocation loc) {
+    private boolean validLocation(AntWarsAIMapLocation loc, boolean useBlanks) {
         ILocationInfo iLoc = loc.getLocationInfo();
-        return iLoc != null && 
-               !iLoc.isFilled() && 
-               !iLoc.isRock() &&
-               !temporaryInvalidLocations.contains(loc.getLocationInfo());
+        if (useBlanks && iLoc == null) {
+            return true;
+        }
+        else {
+            return iLoc != null && 
+                   !iLoc.isFilled() && 
+                   !iLoc.isRock() &&
+                   !temporaryInvalidLocations.contains(loc.getLocationInfo());
+        }
     }
     
     //If you iterate over this object, it will give you a list of AntWarsAIMapLocation

@@ -112,6 +112,10 @@ public class CarrierAI extends SharedAI implements IAntAI {
                     action = EAction.Pass;
                 }
         }
+        else if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
+            //System.out.println("eat food    ");
+            action = EAction.EatFood;
+        }
         else if (possibleActions.contains(EAction.PickUpFood) && 
                  !(thisLocation.getX() == foodDepot[0] && 
                    thisLocation.getY() == foodDepot[1])) {
@@ -122,10 +126,6 @@ public class CarrierAI extends SharedAI implements IAntAI {
                 state = CarrierState.DropFood;
                 //System.out.println("changing to drop food");
             }
-        }
-        else if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
-            //System.out.println("eat food    ");
-            action = EAction.EatFood;
         }
         else if (spinPlease > 0 && possibleActions.contains(EAction.TurnLeft)) {
             //System.out.println("spin");
@@ -187,10 +187,18 @@ public class CarrierAI extends SharedAI implements IAntAI {
             }
             else {
                 if (moves.isEmpty()) {
+                    if (visibleLocations.get(0) != null &&
+                        visibleLocations.get(0).getAnt() != null) {
+                        sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
+                    }
                     moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo(), direction);
+                    sharedMap.clearTemporaryInvalidLocations();
                 }
                 if (possibleActions.contains(moves.get(0))) {
                     action = moves.remove(0);
+                }
+                else if (moves.get(0) == EAction.MoveBackward) {
+                    action = EAction.TurnLeft;
                 }
                 else {
                     action = EAction.Pass;

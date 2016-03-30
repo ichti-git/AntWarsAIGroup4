@@ -17,7 +17,8 @@ public class SharedAI {
     protected static AntWarsAIMap sharedMap;
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
-    protected Map<Integer, IAntInfo> allyAnts = new HashMap<>();
+    //protected static TeamAntsCollection allyAnts;
+    protected static Map<Integer, IAntInfo> allyAnts = new HashMap<>();
     protected static int[] startPos;
     protected static int[] foodDepot;
     protected static int[] worldMax;
