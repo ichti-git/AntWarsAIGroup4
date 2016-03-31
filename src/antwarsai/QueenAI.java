@@ -17,8 +17,8 @@ import java.util.Random;
 public class QueenAI extends SharedAI implements IAntAI {
 
     private final Random rnd = new Random();
-    private QueenState state = QueenState.Test;
-    //private QueenState state = QueenState.FindFood;
+    //private QueenState state = QueenState.Test;
+    private QueenState state = QueenState.FindFood;
 
     /*
      * Queen states: - Start of game - After spawning first ant (carrier ant) -
@@ -82,11 +82,14 @@ public class QueenAI extends SharedAI implements IAntAI {
             if (nextEgg == EAntType.WARRIOR) {
                 egg.set(nextEgg, new Warrior());
             }
+            
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
         }
         else {
             //System.out.println("Couldn't find egg type?!");
         }
+       
+        allyTeamInfo.addEgg(nextEgg);
 
     }
 
@@ -104,9 +107,9 @@ public class QueenAI extends SharedAI implements IAntAI {
         System.out.println("test1");
         return sharedMap.getFirstOneTurnMove(thisAnt, 7, 7, true).get(0);
     }
-    
+
     private EAction stateLayCarrier(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
-        
+
         int[] layEggLocation;
         int startX = startPos[0];
         int startY = startPos[1];
@@ -186,12 +189,15 @@ public class QueenAI extends SharedAI implements IAntAI {
             action = moves.remove(0);
         }
         return action;
-        
+
     }
 
     private EAction stateFortressMode(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         EAction action;
 
+        if (allyTeamInfo.antCount() == 1 || allyTeamInfo.antCount(EAntType.CARRIER) < 1) {
+            state = QueenState.FindFood;
+        }
         if (foodDepot == null) {
             //System.out.println("test");
             return EAction.Pass;
@@ -210,21 +216,15 @@ public class QueenAI extends SharedAI implements IAntAI {
         }
         else if (thisLocation.getX() == startPos[0] && thisLocation.getY() == startPos[1]) {
             if (thisAnt.getFoodLoad() - thisAnt.getAntType().getLayEggCost() > 0) {
-                switch (allyAnts.size()) {
-                    case 0:
-                        nextEgg = EAntType.CARRIER;
-                        break;
-                    case 1:
-                        nextEgg = EAntType.SCOUT;
-                        break;
-                    case 2:
-                        nextEgg = EAntType.WARRIOR;
-                        break;
-                    default:
-                        nextEgg = EAntType.WARRIOR;
-                        break;
+                if (allyTeamInfo.antCount(EAntType.CARRIER) < 1) {
+                    nextEgg = EAntType.CARRIER;
                 }
-                //nextEgg = EAntType.WARRIOR;
+                else if (allyTeamInfo.antCount(EAntType.SCOUT) < 1) {
+                    nextEgg = EAntType.SCOUT;
+                }
+                else { //if (allyTeamInfo.antCount(EAntType.WARRIOR) < 100) {
+                    nextEgg = EAntType.WARRIOR;
+                }
                 action = EAction.LayEgg;
             }
             else if (sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo().getFoodCount() > 5
@@ -245,7 +245,7 @@ public class QueenAI extends SharedAI implements IAntAI {
         }
 
         return action;
-        
+
     }
 
     public enum QueenState {
@@ -279,18 +279,16 @@ public class QueenAI extends SharedAI implements IAntAI {
             action = EAction.PickUpFood;
 
             if (thisAnt.getFoodLoad() > thisAnt.getAntType().getActionCost(EAction.LayEgg)) {
-                if (allyAnts.size() == 1) {
+                if (allyTeamInfo.antCount(EAntType.CARRIER) < 1) {
                     state = QueenState.LayCarrier;
                 }
-                if (allyAnts.size() == 2) {
+                else if (allyTeamInfo.antCount(EAntType.SCOUT) < 1) {
                     state = QueenState.LayScout;
                 }
-                if (allyAnts.size() == 3) {
-                    state = QueenState.LayDefender;
-                }
-                if (allyAnts.size() > 3) {
+                else { //if (allyTeamInfo.antCount(EAntType.WARRIOR) < 100) {
                     state = QueenState.LayWarrior;
                 }
+
             }
         }
         else if (thisAnt.getHitPoints() < 10) {

@@ -7,6 +7,7 @@ import aiantwars.IAntInfo;
 import aiantwars.IEgg;
 import aiantwars.ILocationInfo;
 import static antwarsai.SharedAI.sharedMap;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,8 +15,11 @@ import java.util.List;
  * @author ichti (Simon T)
  */
 public class CarrierAI extends SharedAI implements IAntAI {
+
     private CarrierState state = CarrierState.MakeStartSquare;
-    
+    private final List<IAntInfo> attackerInfo = new ArrayList<>();
+    private final List<ILocationInfo> attackerLocations = new ArrayList<>();
+
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
@@ -31,7 +35,7 @@ public class CarrierAI extends SharedAI implements IAntAI {
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
         EAction action;
-        switch(state) {
+        switch (state) {
             case FindFood:
                 action = stateFindFood(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
@@ -56,13 +60,15 @@ public class CarrierAI extends SharedAI implements IAntAI {
     @Override
     public void onAttacked(IAntInfo thisAnt, int dir, IAntInfo attacker, int damage) {
         sharedOnAttacked(thisAnt, dir, attacker, damage);
+        attackerInfo.add(attacker);
+        attackerLocations.add(attacker.getLocation());
     }
 
     @Override
     public void onDeath(IAntInfo thisAnt) {
         sharedOnDeath(thisAnt);
     }
-    
+
     public void setState(CarrierState state) {
         this.state = state;
     }
@@ -87,38 +93,47 @@ public class CarrierAI extends SharedAI implements IAntAI {
         }
         else if (moves.isEmpty()) {
             //System.out.println("Finding path to food drop");
+            //Ant priority?
+            if (!visibleLocations.isEmpty()
+                    && attackerInfo != null
+                    && attackerLocations.contains(visibleLocations.get(0))) {
+                sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
+            }
             moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo());
+            sharedMap.clearTemporaryInvalidLocations();
             action = moves.remove(0);
         }
         else {
             //System.out.println("Continuing move orders");
             action = moves.remove(0);
         }
+        attackerInfo.clear();
         return action;
     }
 
     int foodLoadReturn = 4;
     int spinPlease = 4;
+
     private EAction stateFindFood(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
-        
+
         EAction action;
         if (!moves.isEmpty()) {
-                if (possibleActions.contains(moves.get(0))) {
-                    action = moves.remove(0);
-                    //System.out.println("doing move order: " + action);
-                }
-                else {
-                    //System.out.println("found impossible action: " + moves.get(0));
-                    action = EAction.Pass;
-                }
+            if (possibleActions.contains(moves.get(0))) {
+                action = moves.remove(0);
+                //System.out.println("doing move order: " + action);
+            }
+            else {
+                //System.out.println("found impossible action: " + moves.get(0));
+                action = EAction.Pass;
+            }
         }
         else if (thisAnt.getHitPoints() < 10 && possibleActions.contains(EAction.EatFood)) {
             //System.out.println("eat food    ");
             action = EAction.EatFood;
         }
-        else if (possibleActions.contains(EAction.PickUpFood) && 
-                 !(thisLocation.getX() == foodDepot[0] && 
-                   thisLocation.getY() == foodDepot[1])) {
+        else if (possibleActions.contains(EAction.PickUpFood)
+                && !(thisLocation.getX() == foodDepot[0]
+                && thisLocation.getY() == foodDepot[1])) {
             //System.out.println("picking up food");
             action = EAction.PickUpFood;
             if (thisAnt.getFoodLoad() > foodLoadReturn) {
@@ -145,13 +160,15 @@ public class CarrierAI extends SharedAI implements IAntAI {
                 //System.out.println("found food. Moving to food");
                 moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
                 action = moves.remove(0);
-                if (action == EAction.MoveForward || action == EAction.MoveBackward) spinPlease = 4;
+                if (action == EAction.MoveForward || action == EAction.MoveBackward) {
+                    spinPlease = 4;
+                }
             }
         }
         else {
             //System.out.println("Pass?");
             action = EAction.Pass;
-        }    
+        }
         return action;
     }
 
@@ -160,35 +177,53 @@ public class CarrierAI extends SharedAI implements IAntAI {
         //Assumes start positions is in the corners.
         int x = 0;
         int y = 0;
-        if (startPos[0] == 0) x = 1;
-        if (startPos[0] == worldMax[0]) x = worldMax[0]-1;
-        if (startPos[1] == 0) y = 1;
-        if (startPos[1] == worldMax[1]) y = worldMax[1]-1;
+        if (startPos[0] == 0) {
+            x = 1;
+        }
+        if (startPos[0] == worldMax[0]) {
+            x = worldMax[0] - 1;
+        }
+        if (startPos[1] == 0) {
+            y = 1;
+        }
+        if (startPos[1] == worldMax[1]) {
+            y = worldMax[1] - 1;
+        }
         ILocationInfo tile4 = sharedMap.getLocation(x, y).getLocationInfo();
-        
-        if (tile4 == null ||
-            (tile4.isFilled() && 
-            !tile4.isRock())) {
+
+        if (tile4 == null
+                || (tile4.isFilled()
+                && !tile4.isRock())) {
             int direction = 0;
-            if (foodDepot[1]+1 == y) direction = 0;
-            if (foodDepot[0]+1 == x) direction = 1;
-            if (foodDepot[1]-1 == y) direction = 2;
-            if (foodDepot[0]-1 == x) direction = 3;
-            
-            if (thisLocation.getX() == foodDepot[0] &&
-                thisLocation.getY() == foodDepot[1] &&
-                thisAnt.getDirection() == direction) {
+            if (foodDepot[1] + 1 == y) {
+                direction = 0;
+            }
+            if (foodDepot[0] + 1 == x) {
+                direction = 1;
+            }
+            if (foodDepot[1] - 1 == y) {
+                direction = 2;
+            }
+            if (foodDepot[0] - 1 == x) {
+                direction = 3;
+            }
+
+            if (thisLocation.getX() == foodDepot[0]
+                    && thisLocation.getY() == foodDepot[1]
+                    && thisAnt.getDirection() == direction) {
                 if (possibleActions.contains(EAction.DigOut)) {
                     action = EAction.DigOut;
                     state = CarrierState.FindFood;
                 }
-                else action = EAction.Pass;
-                
+                else {
+                    action = EAction.Pass;
+                }
+
             }
             else {
                 if (moves.isEmpty()) {
-                    if (visibleLocations.get(0) != null &&
-                        visibleLocations.get(0).getAnt() != null) {
+                    if (visibleLocations.get(0) != null
+                            && visibleLocations.get(0).getAnt() != null) {
                         sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
                     }
                     moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo(), direction);
@@ -211,9 +246,9 @@ public class CarrierAI extends SharedAI implements IAntAI {
         }
         return action;
     }
-    
+
     public enum CarrierState {
-        FindFood, 
+        FindFood,
         DropFood,
         MakeStartSquare
     }

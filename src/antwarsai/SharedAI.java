@@ -7,7 +7,6 @@ import antwarsairesources.AntWarsAIMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -17,8 +16,8 @@ public class SharedAI {
     protected static AntWarsAIMap sharedMap;
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
-    //protected static TeamAntsCollection allyAnts;
-    protected static Map<Integer, IAntInfo> allyAnts = new HashMap<>();
+    protected static AllyTeamInfo allyTeamInfo = new AllyTeamInfo();
+    //protected static Map<Integer, IAntInfo> allyAnts = new HashMap<>();
     protected static int[] startPos;
     protected static int[] foodDepot;
     protected static int[] worldMax;
@@ -31,7 +30,9 @@ public class SharedAI {
     }
     
     protected void sharedOnHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
-        allyAnts.put(thisAnt.antID(), thisAnt);
+        //allyAnts.put(thisAnt.antID(), thisAnt);
+        allyTeamInfo.addAnt(thisAnt);
+        allyTeamInfo.removeEgg(thisAnt.getAntType());
     }
     
     protected void sharedOnStartTurn(IAntInfo thisAnt, int turn) {
@@ -49,7 +50,7 @@ public class SharedAI {
             sharedMap.setLocationInfo(locInfo, currentTurn);
         }
         //System.out.println(debug);
-        
+        allyTeamInfo.updateAnt(thisAnt);
     }
     
     protected void sharedOnAttacked(IAntInfo thisAnt, int dir, IAntInfo attacker, int damage) {
@@ -57,6 +58,6 @@ public class SharedAI {
     }
     
     public void sharedOnDeath(IAntInfo thisAnt) {
-        allyAnts.remove(thisAnt.antID());
+        allyTeamInfo.removeAnt(thisAnt);
     }
 }
