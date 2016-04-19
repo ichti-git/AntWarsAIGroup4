@@ -11,7 +11,6 @@ import aiantwars.IAntAI;
 import aiantwars.IAntInfo;
 import aiantwars.IEgg;
 import aiantwars.ILocationInfo;
-import static antwarsai.SharedAI.sharedMap;
 import java.util.List;
 import java.util.Random;
 
@@ -68,7 +67,7 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
                     if ((visibleLocations.get(i).getAnt().getAntType().equals(EAntType.QUEEN))) {
                         action = EAction.Pass;
                         loc = visibleLocations.get(i);
-                        addLocBadQueen(loc);//thanks Simon
+                        sharedInfo.addLocBadQueen(loc);//thanks Simon
                     }
                 }
 
@@ -76,13 +75,13 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
         }
 
         //Tries to move to an exploration point (currently just not seen locations).
-        if (nextExplorePoint == null || sharedMap.getLocation(nextExplorePoint[0], nextExplorePoint[1]).getLocationInfo() != null) {
+        if (nextExplorePoint == null || sharedInfo.getSharedMap().getLocation(nextExplorePoint[0], nextExplorePoint[1]).getLocationInfo() != null) {
 
-            while (!explorationCoordinates.isEmpty() && sharedMap.getLocation(explorationCoordinates.get(0)[0], explorationCoordinates.get(0)[1]).getLocationInfo() != null) {
-                explorationCoordinates.remove(0);
+            while (!sharedInfo.getExplorationCoordinates().isEmpty() && sharedInfo.getSharedMap().getLocation(sharedInfo.getExplorationCoordinates().get(0)[0], sharedInfo.getExplorationCoordinates().get(0)[1]).getLocationInfo() != null) {
+                sharedInfo.getExplorationCoordinates().remove(0);
             }
-            if (!explorationCoordinates.isEmpty()) {
-                nextExplorePoint = explorationCoordinates.remove(0);
+            if (!sharedInfo.getExplorationCoordinates().isEmpty()) {
+                nextExplorePoint = sharedInfo.getExplorationCoordinates().remove(0);
                 
                 System.out.println("Moving to: " + nextExplorePoint[0] + "," + nextExplorePoint[1]);
             }
@@ -93,12 +92,12 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
         }
         else {
             if (moves.isEmpty()) {
-                moves = sharedMap.getFirstOneTurnMove(thisAnt, nextExplorePoint[0], nextExplorePoint[1], true);
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, nextExplorePoint[0], nextExplorePoint[1], true);
             }
             if (moves.get(0) == EAction.MoveForward && !visibleLocations.isEmpty() && visibleLocations.get(0).getAnt() != null) {
-                sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
-                moves = sharedMap.getFirstOneTurnMove(thisAnt, nextExplorePoint[0], nextExplorePoint[1], true);
-                sharedMap.clearTemporaryInvalidLocations();
+                sharedInfo.getSharedMap().addTemporaryInvalidLocation(visibleLocations.get(0));
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, nextExplorePoint[0], nextExplorePoint[1], true);
+                sharedInfo.getSharedMap().clearTemporaryInvalidLocations();
             }
             if (moves.get(0) == EAction.MoveBackward && !possibleActions.contains(EAction.MoveBackward)) {
                 System.out.println("Need to turn");

@@ -129,7 +129,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, int direction, boolean useBlanks) {
-        System.out.println("gotm pos");
+        //System.out.println("gotm pos");
         //System.out.println("test4");
         if (!useBlanks && getLocation(x,y) == null) return new ArrayList();
         //System.out.println("test5");
@@ -174,7 +174,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction, boolean useBlanks) {
-        System.out.println("gotm loc");
+        //System.out.println("gotm loc");
         if (location == null) return new ArrayList();
         
         Graph APGraph = makeAPGraph(ant, useBlanks);

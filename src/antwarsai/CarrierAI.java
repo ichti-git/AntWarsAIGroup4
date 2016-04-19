@@ -6,9 +6,9 @@ import aiantwars.IAntAI;
 import aiantwars.IAntInfo;
 import aiantwars.IEgg;
 import aiantwars.ILocationInfo;
-import static antwarsai.SharedAI.sharedMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -75,7 +75,7 @@ public class CarrierAI extends SharedAI implements IAntAI {
 
     private EAction stateDropFood(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         EAction action = EAction.Pass;
-        if (thisLocation.getX() == foodDepot[0] && thisLocation.getY() == foodDepot[1]) {
+        if (thisLocation.getX() == sharedInfo.getFoodDepot()[0] && thisLocation.getY() == sharedInfo.getFoodDepot()[1]) {
             if (thisAnt.getFoodLoad() == 0) {
                 //System.out.println("No food to drop, changing state (This shouldn't be reached)");
                 state = CarrierState.FindFood;
@@ -97,10 +97,10 @@ public class CarrierAI extends SharedAI implements IAntAI {
             if (!visibleLocations.isEmpty()
                     && attackerInfo != null
                     && attackerLocations.contains(visibleLocations.get(0))) {
-                sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
+                sharedInfo.getSharedMap().addTemporaryInvalidLocation(visibleLocations.get(0));
             }
-            moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo());
-            sharedMap.clearTemporaryInvalidLocations();
+            moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, sharedInfo.getSharedMap().getLocation(sharedInfo.getFoodDepot()[0], sharedInfo.getFoodDepot()[1]).getLocationInfo());
+            sharedInfo.getSharedMap().clearTemporaryInvalidLocations();
             action = moves.remove(0);
         }
         else {
@@ -132,8 +132,8 @@ public class CarrierAI extends SharedAI implements IAntAI {
             action = EAction.EatFood;
         }
         else if (possibleActions.contains(EAction.PickUpFood)
-                && !(thisLocation.getX() == foodDepot[0]
-                && thisLocation.getY() == foodDepot[1])) {
+                && !(thisLocation.getX() == sharedInfo.getFoodDepot()[0]
+                && thisLocation.getY() == sharedInfo.getFoodDepot()[1])) {
             //System.out.println("picking up food");
             action = EAction.PickUpFood;
             if (thisAnt.getFoodLoad() > foodLoadReturn) {
@@ -148,17 +148,18 @@ public class CarrierAI extends SharedAI implements IAntAI {
             spinPlease--;
         }
         else if (thisAnt.getActionPoints() == thisAnt.getAntType().getMaxActionPoints()) {
-            List<ILocationInfo> foodLocations = sharedMap.getLocationsWithFood();
-            ILocationInfo foodDrop = sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo();
+            List<ILocationInfo> foodLocations = sharedInfo.getSharedMap().getLocationsWithFood();
+            ILocationInfo foodDrop = sharedInfo.getSharedMap().getLocation(sharedInfo.getFoodDepot()[0], sharedInfo.getFoodDepot()[1]).getLocationInfo();
             foodLocations.remove(foodDrop);
             if (foodLocations.isEmpty()) {
                 //System.out.println("No locations with food found");
-                spinPlease++;
-                action = EAction.Pass;
+                //spinPlease++;
+                //action = EAction.Pass;
+                action = returnRandomAction(possibleActions);
             }
             else {
                 //System.out.println("found food. Moving to food");
-                moves = sharedMap.getFirstOneTurnMove(thisAnt, foodLocations);
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodLocations);
                 action = moves.remove(0);
                 if (action == EAction.MoveForward || action == EAction.MoveBackward) {
                     spinPlease = 4;
@@ -177,39 +178,39 @@ public class CarrierAI extends SharedAI implements IAntAI {
         //Assumes start positions is in the corners.
         int x = 0;
         int y = 0;
-        if (startPos[0] == 0) {
+        if (sharedInfo.getStartPos()[0] == 0) {
             x = 1;
         }
-        if (startPos[0] == worldMax[0]) {
-            x = worldMax[0] - 1;
+        if (sharedInfo.getStartPos()[0] == sharedInfo.getWorldMax()[0]) {
+            x = sharedInfo.getWorldMax()[0] - 1;
         }
-        if (startPos[1] == 0) {
+        if (sharedInfo.getStartPos()[1] == 0) {
             y = 1;
         }
-        if (startPos[1] == worldMax[1]) {
-            y = worldMax[1] - 1;
+        if (sharedInfo.getStartPos()[1] == sharedInfo.getWorldMax()[1]) {
+            y = sharedInfo.getWorldMax()[1] - 1;
         }
-        ILocationInfo tile4 = sharedMap.getLocation(x, y).getLocationInfo();
+        ILocationInfo tile4 = sharedInfo.getSharedMap().getLocation(x, y).getLocationInfo();
 
         if (tile4 == null
                 || (tile4.isFilled()
                 && !tile4.isRock())) {
             int direction = 0;
-            if (foodDepot[1] + 1 == y) {
+            if (sharedInfo.getFoodDepot()[1] + 1 == y) {
                 direction = 0;
             }
-            if (foodDepot[0] + 1 == x) {
+            if (sharedInfo.getFoodDepot()[0] + 1 == x) {
                 direction = 1;
             }
-            if (foodDepot[1] - 1 == y) {
+            if (sharedInfo.getFoodDepot()[1] - 1 == y) {
                 direction = 2;
             }
-            if (foodDepot[0] - 1 == x) {
+            if (sharedInfo.getFoodDepot()[0] - 1 == x) {
                 direction = 3;
             }
 
-            if (thisLocation.getX() == foodDepot[0]
-                    && thisLocation.getY() == foodDepot[1]
+            if (thisLocation.getX() == sharedInfo.getFoodDepot()[0]
+                    && thisLocation.getY() == sharedInfo.getFoodDepot()[1]
                     && thisAnt.getDirection() == direction) {
                 if (possibleActions.contains(EAction.DigOut)) {
                     action = EAction.DigOut;
@@ -224,10 +225,10 @@ public class CarrierAI extends SharedAI implements IAntAI {
                 if (moves.isEmpty()) {
                     if (visibleLocations.get(0) != null
                             && visibleLocations.get(0).getAnt() != null) {
-                        sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
+                        sharedInfo.getSharedMap().addTemporaryInvalidLocation(visibleLocations.get(0));
                     }
-                    moves = sharedMap.getFirstOneTurnMove(thisAnt, sharedMap.getLocation(foodDepot[0], foodDepot[1]).getLocationInfo(), direction);
-                    sharedMap.clearTemporaryInvalidLocations();
+                    moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, sharedInfo.getSharedMap().getLocation(sharedInfo.getFoodDepot()[0], sharedInfo.getFoodDepot()[1]).getLocationInfo(), direction);
+                    sharedInfo.getSharedMap().clearTemporaryInvalidLocations();
                 }
                 if (possibleActions.contains(moves.get(0))) {
                     action = moves.remove(0);
@@ -247,6 +248,17 @@ public class CarrierAI extends SharedAI implements IAntAI {
         return action;
     }
 
+        public EAction returnRandomAction(List<EAction> possibleActions) {
+        
+        possibleActions.remove(EAction.Attack); //Never do a random attack. It might be a friendly ant.
+        int size = possibleActions.size();
+        Random rand = new Random();
+        int number = rand.nextInt(size);
+        EAction ac = possibleActions.get(number);
+        return ac;
+
+    }
+        
     public enum CarrierState {
         FindFood,
         DropFood,

@@ -58,15 +58,15 @@ public class Warrior extends SharedAI implements IAntAI {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
 
         EAction action;
-        for (Map.Entry<Integer, ILocationInfo> entry : locQueen.entrySet()) {
+        for (Map.Entry<Integer, ILocationInfo> entry : sharedInfo.getLocQueen().entrySet()) {
             //System.out.println(entry.getValue().getAnt());
             
-            if (sharedMap.getLocation(entry.getValue()).getLocationInfo().getAnt() == null) {
-                locQueen.remove(entry.getKey());
+            if (sharedInfo.getSharedMap().getLocation(entry.getValue()).getLocationInfo().getAnt() == null) {
+                sharedInfo.getLocQueen().remove(entry.getKey());
             }
         }
         //System.out.println(locQueen);
-        if (locQueen.isEmpty()) {
+        if (sharedInfo.getLocQueen().isEmpty()) {
             //System.out.println("I am in if locQueen");
             action = choseHowToMoveAnt(possibleActions);
         }
@@ -95,24 +95,24 @@ public class Warrior extends SharedAI implements IAntAI {
             else {
                 //ally ant
                 //System.out.println("sees ally");
-                sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
-                Map.Entry<Integer, ILocationInfo> entry = locQueen.entrySet().iterator().next();
+                sharedInfo.getSharedMap().addTemporaryInvalidLocation(visibleLocations.get(0));
+                Map.Entry<Integer, ILocationInfo> entry = sharedInfo.getLocQueen().entrySet().iterator().next();
                 ILocationInfo firstvalue = entry.getValue();
-                moves = sharedMap.getFirstOneTurnMove(thisAnt, firstvalue);
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, firstvalue);
                 action = moves.remove(0);
                 if (action == EAction.Pass) {
                     action = EAction.TurnLeft;
                 }
-                sharedMap.clearTemporaryInvalidLocations();
+                sharedInfo.getSharedMap().clearTemporaryInvalidLocations();
             }
         }
         else {
             
             //sharedMap.addTemporaryInvalidLocation(visibleLocations.get(0));
             //System.out.println("sees nothing");
-            Map.Entry<Integer, ILocationInfo> entry = locQueen.entrySet().iterator().next();
+            Map.Entry<Integer, ILocationInfo> entry = sharedInfo.getLocQueen().entrySet().iterator().next();
             ILocationInfo firstvalue = entry.getValue();
-            moves = sharedMap.getFirstOneTurnMove(thisAnt, firstvalue);
+            moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, firstvalue);
             action = moves.remove(0);
         }
         return action;

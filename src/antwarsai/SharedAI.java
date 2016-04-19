@@ -3,9 +3,7 @@ package antwarsai;
 import aiantwars.EAction;
 import aiantwars.IAntInfo;
 import aiantwars.ILocationInfo;
-import antwarsairesources.AntWarsAIMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -16,42 +14,30 @@ public class SharedAI {
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
     
-    protected static AntWarsAIMap sharedMap;
-    protected static AllyTeamInfo allyTeamInfo = new AllyTeamInfo();
-    //protected static Map<Integer, IAntInfo> allyAnts = new HashMap<>();
-    protected static int[] startPos;
-    protected static int[] foodDepot;
-    protected static int[] worldMax;
-    protected static HashMap<Integer, ILocationInfo> locQueen = new HashMap<>();
-    protected static List<int[]> explorationCoordinates = new ArrayList<>(); 
+    protected SharedInfo sharedInfo;
     
-    public void addLocBadQueen(ILocationInfo info)
-    {
-        locQueen.put(info.getAnt().getTeamInfo().getTeamID(), info);
+    public void setSharedInfo(SharedInfo shared) {
+        sharedInfo = shared;
     }
     
     protected void sharedOnHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
         //allyAnts.put(thisAnt.antID(), thisAnt);
-        allyTeamInfo.addAnt(thisAnt);
-        allyTeamInfo.removeEgg(thisAnt.getAntType());
+        sharedInfo.getAllyTeamInfo().addAnt(thisAnt);
+        sharedInfo.getAllyTeamInfo().removeEgg(thisAnt.getAntType());
     }
     
     protected void sharedOnStartTurn(IAntInfo thisAnt, int turn) {
-        currentTurn = turn; //change when getTurn is available
+        currentTurn = turn; 
         moves.clear();
     }
-    private String lts(ILocationInfo loc) {
-        return loc.getX()+","+loc.getY();
-    }
+    
     protected void sharedChooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
-        String debug = "Seing "+lts(thisLocation);
-        sharedMap.setLocationInfo(thisLocation, currentTurn);
+        
+        sharedInfo.getSharedMap().setLocationInfo(thisLocation, currentTurn);
         for (ILocationInfo locInfo : visibleLocations) {
-            debug += "; "+lts(locInfo);
-            sharedMap.setLocationInfo(locInfo, currentTurn);
+            sharedInfo.getSharedMap().setLocationInfo(locInfo, currentTurn);
         }
-        //System.out.println(debug);
-        allyTeamInfo.updateAnt(thisAnt);
+        sharedInfo.getAllyTeamInfo().updateAnt(thisAnt);
     }
     
     protected void sharedOnAttacked(IAntInfo thisAnt, int dir, IAntInfo attacker, int damage) {
@@ -59,6 +45,6 @@ public class SharedAI {
     }
     
     public void sharedOnDeath(IAntInfo thisAnt) {
-        allyTeamInfo.removeAnt(thisAnt);
+        sharedInfo.getAllyTeamInfo().removeAnt(thisAnt);
     }
 }
