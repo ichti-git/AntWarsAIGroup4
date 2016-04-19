@@ -6,7 +6,11 @@ import aiantwars.IAntAI;
 import aiantwars.IAntInfo;
 import aiantwars.IEgg;
 import aiantwars.ILocationInfo;
+import static antwarsai.SharedAI.sharedMap;
 import antwarsairesources.AntWarsAIMap;
+import antwarsairesources.AntWarsAIMapLocation;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -34,6 +38,15 @@ public class QueenAI extends SharedAI implements IAntAI {
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
         startPos = new int[]{thisLocation.getX(), thisLocation.getY()};
         worldMax = new int[]{worldSizeX - 1, worldSizeY - 1};
+        
+        List<int[]> nullcoords = new ArrayList<>(); 
+        for (AntWarsAIMapLocation mapLoc : sharedMap) {
+            if (mapLoc.getLocationInfo() == null) {
+                nullcoords.add(new int[] {mapLoc.getX(), mapLoc.getY()});
+            }
+        }
+        Collections.shuffle(nullcoords);
+        explorationCoordinates = nullcoords;
     }
 
     @Override
@@ -80,7 +93,7 @@ public class QueenAI extends SharedAI implements IAntAI {
                 egg.set(nextEgg, new ScoutAI3());
             }
             if (nextEgg == EAntType.WARRIOR) {
-                egg.set(nextEgg, new Warrior());
+                egg.set(nextEgg, new BrandNewWarrior());
             }
             
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
@@ -104,8 +117,9 @@ public class QueenAI extends SharedAI implements IAntAI {
     }
 
     private EAction stateTest(IAntInfo thisAnt) {
-        System.out.println("test1");
-        return sharedMap.getFirstOneTurnMove(thisAnt, 7, 7, true).get(0);
+        //System.out.println("test1");
+        //return sharedMap.getFirstOneTurnMove(thisAnt, 7, 7, true).get(0);
+        return EAction.Pass;
     }
 
     private EAction stateLayCarrier(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {

@@ -71,7 +71,7 @@ public class Warrior extends SharedAI implements IAntAI {
             action = choseHowToMoveAnt(possibleActions);
         }
         
-        else if ((visibleLocations.get(0).getAnt() != null)) {
+        else if (!visibleLocations.isEmpty() && (visibleLocations.get(0).getAnt() != null)) {
             //System.out.println("locQueen not empty");
             //kill queen
 

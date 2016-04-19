@@ -13,20 +13,21 @@ import java.util.List;
  * @author ichti (Simon T)
  */
 public class SharedAI {
-    protected static AntWarsAIMap sharedMap;
     protected int currentTurn;
     protected List<EAction> moves = new ArrayList<>();
+    
+    protected static AntWarsAIMap sharedMap;
     protected static AllyTeamInfo allyTeamInfo = new AllyTeamInfo();
     //protected static Map<Integer, IAntInfo> allyAnts = new HashMap<>();
     protected static int[] startPos;
     protected static int[] foodDepot;
     protected static int[] worldMax;
     protected static HashMap<Integer, ILocationInfo> locQueen = new HashMap<>();
+    protected static List<int[]> explorationCoordinates = new ArrayList<>(); 
     
     public void addLocBadQueen(ILocationInfo info)
     {
         locQueen.put(info.getAnt().getTeamInfo().getTeamID(), info);
-        
     }
     
     protected void sharedOnHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {

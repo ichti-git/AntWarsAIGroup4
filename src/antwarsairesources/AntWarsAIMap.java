@@ -118,7 +118,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<EAction> getFirstOneTurnMove(IAntInfo ant, int x, int y, boolean useBlanks) {
-        System.out.println("test2");
+        //System.out.println("test2");
         return getFirstOneTurnMove(getOneTurnMoves(ant, x, y, useBlanks));
     } 
     
@@ -129,9 +129,10 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, int direction, boolean useBlanks) {
-        System.out.println("test4");
+        System.out.println("gotm pos");
+        //System.out.println("test4");
         if (!useBlanks && getLocation(x,y) == null) return new ArrayList();
-        System.out.println("test5");
+        //System.out.println("test5");
         Graph APGraph = makeAPGraph(ant, useBlanks);
         int antAP = ant.getActionPoints();
         //Graph APGraph = makeAPGraph();
@@ -173,6 +174,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, ILocationInfo location, int direction, boolean useBlanks) {
+        System.out.println("gotm loc");
         if (location == null) return new ArrayList();
         
         Graph APGraph = makeAPGraph(ant, useBlanks);
@@ -227,7 +229,7 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
     }
     
     public List<List<EAction>> getOneTurnMoves(IAntInfo ant, int x, int y, boolean useBlanks) {
-        System.out.println("test3");
+        //System.out.println("test3");
         int cost = Integer.MAX_VALUE;
         List<List<EAction>> best = null;
         for (int i = 0; i < 4; i++) {
