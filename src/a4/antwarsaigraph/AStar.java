@@ -1,4 +1,4 @@
-package antwarsaigraph;
+package a4.antwarsaigraph;
 
 import java.util.ArrayList;
 import java.util.Collections;

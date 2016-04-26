@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.EAntType;
@@ -20,6 +20,10 @@ public class CarrierAI extends SharedAI implements IAntAI {
     private final List<IAntInfo> attackerInfo = new ArrayList<>();
     private final List<ILocationInfo> attackerLocations = new ArrayList<>();
 
+    public CarrierAI(SharedInfo sharedInfo) {
+        super(sharedInfo);
+    }
+
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
@@ -34,22 +38,22 @@ public class CarrierAI extends SharedAI implements IAntAI {
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
-        EAction action;
+        //EAction action;
         switch (state) {
             case FindFood:
-                action = stateFindFood(thisAnt, thisLocation, visibleLocations, possibleActions);
-                break;
+                return stateFindFood(thisAnt, thisLocation, visibleLocations, possibleActions);
+                //break;
             case DropFood:
-                action = stateDropFood(thisAnt, thisLocation, visibleLocations, possibleActions);
-                break;
+                return stateDropFood(thisAnt, thisLocation, visibleLocations, possibleActions);
+                //break;
             case MakeStartSquare:
-                action = stateMakeStartSquare(thisAnt, thisLocation, visibleLocations, possibleActions);
-                break;
+                return stateMakeStartSquare(thisAnt, thisLocation, visibleLocations, possibleActions);
+                //break;
             default:
                 //System.out.println("state not found");
-                action = EAction.Pass;
+                return EAction.Pass;
         }
-        return action;
+        //return action;
     }
 
     @Override
@@ -176,6 +180,7 @@ public class CarrierAI extends SharedAI implements IAntAI {
     private EAction stateMakeStartSquare(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
         EAction action;
         //Assumes start positions is in the corners.
+        /*
         int x = 0;
         int y = 0;
         if (sharedInfo.getStartPos()[0] == 0) {
@@ -245,6 +250,9 @@ public class CarrierAI extends SharedAI implements IAntAI {
             state = CarrierState.FindFood;
             action = EAction.Pass;
         }
+        */
+        state = CarrierState.FindFood;
+        action = EAction.Pass;
         return action;
     }
 
@@ -264,4 +272,27 @@ public class CarrierAI extends SharedAI implements IAntAI {
         DropFood,
         MakeStartSquare
     }
+    
+    @Override
+    public void onStartMatch(int worldSizeX, int worldSizeY) {
+    }
+
+    @Override
+    public void onStartRound(int round) {
+    }
+
+    @Override
+    public void onEndRound(int yourMajor, int yourMinor, int enemyMajor, int enemyMinor) {
+    }
+
+    @Override
+    public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
 }
+
+
+/* Layers...
+ * ml for each layer?
+ * 
+ * 
+ */

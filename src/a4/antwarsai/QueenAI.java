@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.EAntType;
@@ -6,8 +6,8 @@ import aiantwars.IAntAI;
 import aiantwars.IAntInfo;
 import aiantwars.IEgg;
 import aiantwars.ILocationInfo;
-import antwarsairesources.AntWarsAIMap;
-import antwarsairesources.AntWarsAIMapLocation;
+import a4.antwarsairesources.AntWarsAIMap;
+import a4.antwarsairesources.AntWarsAIMapLocation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,13 +18,15 @@ import java.util.Random;
  * @author ichti (Simon T)
  */
 public class QueenAI extends SharedAI implements IAntAI {
+
     //private AntWarsAIMap sharedInfo.getSharedMap();
     private final Random rnd = new Random();
     //private QueenState state = QueenState.Test;
     private QueenState state = QueenState.FindFood;
-
+    private final int findfoodturn = 250;
     public QueenAI() {
-        sharedInfo = new SharedInfo();
+        super();
+        //sharedInfo = new SharedInfo();
     }
 
     /*
@@ -34,6 +36,7 @@ public class QueenAI extends SharedAI implements IAntAI {
      */
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
+        sharedInfo = new SharedInfo();
         sharedInfo.setSharedMap(new AntWarsAIMap(worldSizeX, worldSizeY));
         //Only the queen should instanciate the sharedMap. 
         //If more than 1 queen is allowed, change so a new queen doesn't make 
@@ -41,11 +44,11 @@ public class QueenAI extends SharedAI implements IAntAI {
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
         sharedInfo.setStartPos(new int[]{thisLocation.getX(), thisLocation.getY()});
         sharedInfo.setWorldMax(new int[]{worldSizeX - 1, worldSizeY - 1});
-        
-        List<int[]> nullcoords = new ArrayList<>(); 
+
+        List<int[]> nullcoords = new ArrayList<>();
         for (AntWarsAIMapLocation mapLoc : sharedInfo.getSharedMap()) {
             if (mapLoc.getLocationInfo() == null) {
-                nullcoords.add(new int[] {mapLoc.getX(), mapLoc.getY()});
+                nullcoords.add(new int[]{mapLoc.getX(), mapLoc.getY()});
             }
         }
         Collections.shuffle(nullcoords);
@@ -67,6 +70,12 @@ public class QueenAI extends SharedAI implements IAntAI {
                 break;
             case LayCarrier:
                 action = stateLayCarrier(thisAnt, thisLocation, visibleLocations, possibleActions);
+                break;
+            case LayScout:
+                action = stateLayScout(thisAnt, thisLocation, visibleLocations, possibleActions);
+                break;
+            case LayWarrior:
+                action = stateLayWarrior(thisAnt, thisLocation, visibleLocations, possibleActions);
                 break;
             case FortressMode:
                 action = stateFortressMode(thisAnt, thisLocation, visibleLocations, possibleActions);
@@ -90,21 +99,21 @@ public class QueenAI extends SharedAI implements IAntAI {
         //egg.set(type, this);
         if (types.contains(nextEgg)) {
             if (nextEgg == EAntType.CARRIER) {
-                egg.set(nextEgg, new CarrierAI());
+                egg.set(nextEgg, new CarrierAI(sharedInfo));
             }
             if (nextEgg == EAntType.SCOUT) {
-                egg.set(nextEgg, new ScoutAI3());
+                egg.set(nextEgg, new ScoutAI3(sharedInfo));
             }
             if (nextEgg == EAntType.WARRIOR) {
-                egg.set(nextEgg, new BrandNewWarrior());
+                egg.set(nextEgg, new BrandNewWarrior(sharedInfo));
             }
-            
+
             //if (nextEgg == EAntType.WARRIOR) egg.set(nextEgg, new WarriorAI());
         }
         else {
             //System.out.println("Couldn't find egg type?!");
         }
-       
+
         sharedInfo.getAllyTeamInfo().addEgg(nextEgg);
 
     }
@@ -130,36 +139,50 @@ public class QueenAI extends SharedAI implements IAntAI {
         int[] layEggLocation;
         int startX = sharedInfo.getStartPos()[0];
         int startY = sharedInfo.getStartPos()[1];
-        if (sharedInfo.getSharedMap().getLocation(startX, startY + 1) != null
-                && sharedInfo.getSharedMap().getLocation(startX, startY + 1).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX, startY + 1).getLocationInfo().isFilled()
-                && sharedInfo.getSharedMap().getLocation(startX, startY + 2).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX, startY + 2).getLocationInfo().isFilled()) {
-            layEggLocation = new int[]{startX, startY, 0};
-        }
-        else if (sharedInfo.getSharedMap().getLocation(startX, startY - 1) != null
-                && sharedInfo.getSharedMap().getLocation(startX, startY - 1).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX, startY - 1).getLocationInfo().isFilled()
-                && sharedInfo.getSharedMap().getLocation(startX, startY - 2).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX, startY - 2).getLocationInfo().isFilled()) {
-            layEggLocation = new int[]{startX, startY, 2};
-        }
-        else if (sharedInfo.getSharedMap().getLocation(startX - 1, startY) != null
-                && sharedInfo.getSharedMap().getLocation(startX - 1, startY).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX - 1, startY).getLocationInfo().isFilled()
-                && sharedInfo.getSharedMap().getLocation(startX - 2, startY).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX - 2, startY).getLocationInfo().isFilled()) {
-            layEggLocation = new int[]{startX, startY, 3};
-        }
-        else if (sharedInfo.getSharedMap().getLocation(startX + 1, startY) != null
-                && sharedInfo.getSharedMap().getLocation(startX + 1, startY).getLocationInfo() != null
-                && !sharedInfo.getSharedMap().getLocation(startX + 1, startY).getLocationInfo().isFilled()) {
+        if (startX == 0) {
             layEggLocation = new int[]{startX, startY, 1};
         }
         else {
             layEggLocation = new int[]{startX, startY, 3};
         }
-
+        /*
+         * if (sharedInfo.getSharedMap().getLocation(startX, startY + 1) != null
+         * && sharedInfo.getSharedMap().getLocation(startX, startY +
+         * 1).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX, startY +
+         * 1).getLocationInfo().isFilled() &&
+         * sharedInfo.getSharedMap().getLocation(startX, startY +
+         * 2).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX, startY +
+         * 2).getLocationInfo().isFilled()) { layEggLocation = new int[]{startX,
+         * startY, 0}; } else if (sharedInfo.getSharedMap().getLocation(startX,
+         * startY - 1) != null && sharedInfo.getSharedMap().getLocation(startX,
+         * startY - 1).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX, startY -
+         * 1).getLocationInfo().isFilled() &&
+         * sharedInfo.getSharedMap().getLocation(startX, startY -
+         * 2).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX, startY -
+         * 2).getLocationInfo().isFilled()) { layEggLocation = new int[]{startX,
+         * startY, 2}; } else if (sharedInfo.getSharedMap().getLocation(startX -
+         * 1, startY) != null && sharedInfo.getSharedMap().getLocation(startX -
+         * 1, startY).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX - 1,
+         * startY).getLocationInfo().isFilled() &&
+         * sharedInfo.getSharedMap().getLocation(startX - 2,
+         * startY).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX - 2,
+         * startY).getLocationInfo().isFilled()) { layEggLocation = new
+         * int[]{startX, startY, 3}; } else if
+         * (sharedInfo.getSharedMap().getLocation(startX + 1, startY) != null &&
+         * sharedInfo.getSharedMap().getLocation(startX + 1,
+         * startY).getLocationInfo() != null &&
+         * !sharedInfo.getSharedMap().getLocation(startX + 1,
+         * startY).getLocationInfo().isFilled()) { layEggLocation = new
+         * int[]{startX, startY, 1}; } else { layEggLocation = new int[]{startX,
+         * startY, 3}; }
+         *
+         */
         EAction action;
         if (layEggLocation[2] == thisAnt.getDirection()
                 && layEggLocation[0] == thisAnt.getLocation().getX()
@@ -168,14 +191,8 @@ public class QueenAI extends SharedAI implements IAntAI {
             if (possibleActions.contains(EAction.LayEgg)) {
                 int foodX = thisLocation.getX();
                 int foodY = thisLocation.getY();
-                if (layEggLocation[2] == 0) {
-                    foodY++;
-                }
                 if (layEggLocation[2] == 1) {
                     foodX++;
-                }
-                if (layEggLocation[2] == 2) {
-                    foodY--;
                 }
                 if (layEggLocation[2] == 3) {
                     foodX--;
@@ -184,7 +201,12 @@ public class QueenAI extends SharedAI implements IAntAI {
                 //System.out.println("foodDepot: {"+foodX+","+foodY+"}");
                 nextEgg = EAntType.CARRIER;
                 action = EAction.LayEgg;
-                state = QueenState.FortressMode;
+                if (currentTurn < findfoodturn) {
+                    state = QueenState.FindFood;
+                }
+                else {
+                    state = QueenState.FortressMode;
+                }
             }
             else {
 
@@ -265,6 +287,30 @@ public class QueenAI extends SharedAI implements IAntAI {
 
     }
 
+    private EAction stateLayScout(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
+        
+        if (currentTurn < findfoodturn) {
+            state = QueenState.FindFood;
+        }
+        else {
+            state = QueenState.FortressMode;
+        }
+        nextEgg = EAntType.SCOUT;
+        return EAction.LayEgg;
+    }
+    
+    private EAction stateLayWarrior(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
+        
+        if (currentTurn < findfoodturn) {
+            state = QueenState.FindFood;
+        }
+        else {
+            state = QueenState.FortressMode;
+        }
+        nextEgg = EAntType.WARRIOR;
+        return EAction.LayEgg;
+    }
+
     public enum QueenState {
         FindFood,
         LayCarrier,
@@ -290,7 +336,6 @@ public class QueenAI extends SharedAI implements IAntAI {
                 //System.out.println("found impossible action" + moves.get(0));
                 action = EAction.Pass;
             }
-
         }
         else if (possibleActions.contains(EAction.PickUpFood)) {
             action = EAction.PickUpFood;
@@ -335,5 +380,20 @@ public class QueenAI extends SharedAI implements IAntAI {
             action = EAction.Pass;
         }
         return action;
+    }
+    @Override
+    public void onStartMatch(int worldSizeX, int worldSizeY) {
+    }
+
+    @Override
+    public void onStartRound(int round) {
+    }
+
+    @Override
+    public void onEndRound(int yourMajor, int yourMinor, int enemyMajor, int enemyMinor) {
+    }
+
+    @Override
+    public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
     }
 }

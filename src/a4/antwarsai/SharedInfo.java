@@ -1,7 +1,8 @@
-package antwarsai;
+package a4.antwarsai;
 
+import a4.antwarsai.AllyTeamInfo;
 import aiantwars.ILocationInfo;
-import antwarsairesources.AntWarsAIMap;
+import a4.antwarsairesources.AntWarsAIMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,5 +77,4 @@ public class SharedInfo {
     public void setExplorationCoordinates(int[] coords) {
         this.explorationCoordinates.add(coords);
     }
-    
 }

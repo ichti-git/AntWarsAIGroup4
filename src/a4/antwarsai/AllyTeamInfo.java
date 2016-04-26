@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAntType;
 import aiantwars.IAntInfo;

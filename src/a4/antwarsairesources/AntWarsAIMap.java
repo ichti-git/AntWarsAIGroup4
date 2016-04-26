@@ -1,13 +1,13 @@
-package antwarsairesources;
+package a4.antwarsairesources;
 
 import aiantwars.EAction;
 import aiantwars.IAntInfo;
 import aiantwars.ILocationInfo;
-import antwarsaigraph.AStar;
-import antwarsaigraph.Graph;
-import antwarsaigraph.ManhattanHeuristic;
-import antwarsaigraph.Node;
-import antwarsaigraph.ZeroHeuristic;
+import a4.antwarsaigraph.AStar;
+import a4.antwarsaigraph.Graph;
+import a4.antwarsaigraph.ManhattanHeuristic;
+import a4.antwarsaigraph.Node;
+import a4.antwarsaigraph.ZeroHeuristic;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -545,7 +545,6 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         //edges externally
         for (AntWarsAIMapLocation loc : this) {
             if (validLocation(loc, useBlanks)) {
-                
                 int x = loc.getX();
                 int y = loc.getY();
                 //direction 0/North/Up edge
@@ -670,9 +669,8 @@ public class AntWarsAIMap implements Iterable<AntWarsAIMapLocation> {
         return movesList;
     }
 
-    public void addTemporaryInvalidLocation(ILocationInfo get) {
-        temporaryInvalidLocations.add(get);
-                
+    public void addTemporaryInvalidLocation(ILocationInfo loc) {
+        temporaryInvalidLocations.add(loc);
     }
 
     

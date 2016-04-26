@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.EAntType;
@@ -38,5 +38,19 @@ public class PassAI implements IAntAI {
     @Override
     public void onDeath(IAntInfo thisAnt) {
     }
-    
+    @Override
+    public void onStartMatch(int worldSizeX, int worldSizeY) {
+    }
+
+    @Override
+    public void onStartRound(int round) {
+    }
+
+    @Override
+    public void onEndRound(int yourMajor, int yourMinor, int enemyMajor, int enemyMinor) {
+    }
+
+    @Override
+    public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }    
 }

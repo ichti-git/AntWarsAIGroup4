@@ -1,4 +1,4 @@
-package antwarsairesources;
+package a4.antwarsairesources;
 
 import aiantwars.ILocationInfo;
 

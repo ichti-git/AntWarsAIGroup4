@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.EAntType;
@@ -21,6 +21,10 @@ public class BrandNewWarrior extends SharedAI implements IAntAI {
     int[] arrayinfo = new int[2];
     int[] arrayLeftOrRightMove = new int[1];
     private ArrayList<EAction>  listofActions = new ArrayList<EAction>();
+
+    public BrandNewWarrior(SharedInfo sharedInfo) {
+        super(sharedInfo);
+    }
     
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
@@ -325,5 +329,21 @@ public class BrandNewWarrior extends SharedAI implements IAntAI {
 //    { 
 //        
 //    }
+
+    @Override
+    public void onStartMatch(int worldSizeX, int worldSizeY) {
+    }
+
+    @Override
+    public void onStartRound(int round) {
+    }
+
+    @Override
+    public void onEndRound(int yourMajor, int yourMinor, int enemyMajor, int enemyMinor) {
+    }
+
+    @Override
+    public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
 }
 

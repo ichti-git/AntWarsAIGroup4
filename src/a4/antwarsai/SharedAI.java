@@ -1,4 +1,4 @@
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.IAntInfo;
@@ -15,6 +15,14 @@ public class SharedAI {
     protected List<EAction> moves = new ArrayList<>();
     
     protected SharedInfo sharedInfo;
+    
+    public SharedAI() {
+        //sharedInfo = new SharedInfo();
+    }
+    
+    public SharedAI(SharedInfo sharedInfo) {
+        this.sharedInfo = sharedInfo;
+    }
     
     public void setSharedInfo(SharedInfo shared) {
         sharedInfo = shared;

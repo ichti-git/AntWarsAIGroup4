@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package antwarsai;
+package a4.antwarsai;
 
 import aiantwars.EAction;
 import aiantwars.EAntType;
@@ -22,6 +22,14 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
 
     Random rand = new Random();
     private int[] nextExplorePoint = null;
+    
+    public ScoutAI3() {
+        
+    }
+
+    public ScoutAI3(SharedInfo sharedInfo) {
+        super(sharedInfo);
+    }
 
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
@@ -129,5 +137,19 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
     public void onDeath(IAntInfo thisAnt) {
         sharedOnDeath(thisAnt);
     }
+    @Override
+    public void onStartMatch(int worldSizeX, int worldSizeY) {
+    }
 
+    @Override
+    public void onStartRound(int round) {
+    }
+
+    @Override
+    public void onEndRound(int yourMajor, int yourMinor, int enemyMajor, int enemyMinor) {
+    }
+
+    @Override
+    public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
 }
