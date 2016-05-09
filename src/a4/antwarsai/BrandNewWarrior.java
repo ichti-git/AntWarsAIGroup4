@@ -28,7 +28,7 @@ public class BrandNewWarrior extends SharedAI implements IAntAI {
     
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
-        
+        long startTime = System.currentTimeMillis();
         sharedChooseAction(thisAnt,  thisLocation, visibleLocations, possibleActions);//Simon method
         
         
@@ -273,6 +273,9 @@ public class BrandNewWarrior extends SharedAI implements IAntAI {
          return  action = possibleActions.get(pickedaction);
             }
         }
+        long stopTime = System.currentTimeMillis();
+        long ela = stopTime - startTime;
+        System.out.println("Warrior time: " + ela);
     return action ;
     }
     @Override
@@ -344,6 +347,11 @@ public class BrandNewWarrior extends SharedAI implements IAntAI {
 
     @Override
     public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
+    
+    //@Override
+    public String toString2() {
+        return "BrandNewWarrior";
     }
 }
 

@@ -3,15 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group name="AntWars">
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/PassAI.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/SharedAI.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/CarrierAI.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsairesources/AntWarsAIMap.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/AllyTeamInfo.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/BrandNewWarrior.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/ScoutAI3.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/QueenAI.java</file>
-            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/antwarsai/SharedInfo.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/CarrierAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsaigraph/AntNode.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/Warrior.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/ScoutAI3.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsaigraph/AntGraph.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/QueenAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/BrandNewWarrior.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsaigraph/AntEdge.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/SharedAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsaigraph/AStar.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsairesources/AntWarsAIMap.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/PassAI.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsaigraph/AntAStar.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/SharedInfo.java</file>
+            <file>file:/home/ichti/NetBeansProjects/AntWars/AntWarsAI/src/a4/antwarsai/AllyTeamInfo.java</file>
         </group>
     </open-files>
 </project-private>

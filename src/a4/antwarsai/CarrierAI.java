@@ -99,8 +99,7 @@ public class CarrierAI extends SharedAI implements IAntAI {
             //System.out.println("Finding path to food drop");
             //Ant priority?
             if (!visibleLocations.isEmpty()
-                    && attackerInfo != null
-                    && attackerLocations.contains(visibleLocations.get(0))) {
+                    && visibleLocations.get(0).getAnt() != null) {
                 sharedInfo.getSharedMap().addTemporaryInvalidLocation(visibleLocations.get(0));
             }
             moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, sharedInfo.getSharedMap().getLocation(sharedInfo.getFoodDepot()[0], sharedInfo.getFoodDepot()[1]).getLocationInfo());
@@ -163,7 +162,8 @@ public class CarrierAI extends SharedAI implements IAntAI {
             }
             else {
                 //System.out.println("found food. Moving to food");
-                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodLocations);
+                ILocationInfo foodloc = getManhattenFood(thisLocation, foodLocations);
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodloc);
                 action = moves.remove(0);
                 if (action == EAction.MoveForward || action == EAction.MoveBackward) {
                     spinPlease = 4;
@@ -287,6 +287,11 @@ public class CarrierAI extends SharedAI implements IAntAI {
 
     @Override
     public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
+    
+    //@Override
+    public String toString2() {
+        return "CarrierAI";
     }
 }
 

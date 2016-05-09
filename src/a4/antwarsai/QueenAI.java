@@ -23,7 +23,8 @@ public class QueenAI extends SharedAI implements IAntAI {
     private final Random rnd = new Random();
     //private QueenState state = QueenState.Test;
     private QueenState state = QueenState.FindFood;
-    private final int findfoodturn = 250;
+    private final int findfoodturn = 3;
+    private int[] layEggLocation;
     public QueenAI() {
         super();
         //sharedInfo = new SharedInfo();
@@ -36,13 +37,15 @@ public class QueenAI extends SharedAI implements IAntAI {
      */
     @Override
     public void onHatch(IAntInfo thisAnt, ILocationInfo thisLocation, int worldSizeX, int worldSizeY) {
+        
         sharedInfo = new SharedInfo();
+        state = QueenState.FindFood;
         sharedInfo.setSharedMap(new AntWarsAIMap(worldSizeX, worldSizeY));
         //Only the queen should instanciate the sharedMap. 
         //If more than 1 queen is allowed, change so a new queen doesn't make 
         //a new sharedMap
         sharedOnHatch(thisAnt, thisLocation, worldSizeX, worldSizeY);
-        sharedInfo.setStartPos(new int[]{thisLocation.getX(), thisLocation.getY()});
+        sharedInfo.setStartPos(new int[]{thisLocation.getX(), thisLocation.getY(), thisAnt.getDirection()});
         sharedInfo.setWorldMax(new int[]{worldSizeX - 1, worldSizeY - 1});
 
         List<int[]> nullcoords = new ArrayList<>();
@@ -62,6 +65,8 @@ public class QueenAI extends SharedAI implements IAntAI {
 
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
+        long startTime = System.currentTimeMillis();
+        
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
         EAction action;
         switch (state) {
@@ -136,7 +141,7 @@ public class QueenAI extends SharedAI implements IAntAI {
 
     private EAction stateLayCarrier(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
 
-        int[] layEggLocation;
+        
         int startX = sharedInfo.getStartPos()[0];
         int startY = sharedInfo.getStartPos()[1];
         if (startX == 0) {
@@ -201,12 +206,14 @@ public class QueenAI extends SharedAI implements IAntAI {
                 //System.out.println("foodDepot: {"+foodX+","+foodY+"}");
                 nextEgg = EAntType.CARRIER;
                 action = EAction.LayEgg;
+                
                 if (currentTurn < findfoodturn) {
                     state = QueenState.FindFood;
                 }
                 else {
                     state = QueenState.FortressMode;
                 }
+                state = QueenState.FortressMode;
             }
             else {
 
@@ -249,7 +256,7 @@ public class QueenAI extends SharedAI implements IAntAI {
                 action = EAction.PickUpFood;
             }
             else {
-                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, sharedInfo.getSharedMap().getLocation(sharedInfo.getStartPos()[0], sharedInfo.getStartPos()[1]).getLocationInfo());
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, sharedInfo.getSharedMap().getLocation(sharedInfo.getStartPos()[0], sharedInfo.getStartPos()[1]).getLocationInfo(), layEggLocation[2]);
                 action = moves.remove(0);
             }
         }
@@ -368,8 +375,11 @@ public class QueenAI extends SharedAI implements IAntAI {
                 action = EAction.Pass;
             }
             else {
-                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodLocations);
-                action = moves.remove(0);
+                ILocationInfo foodloc = getManhattenFood(thisLocation, foodLocations);
+                moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodloc);
+                //moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, foodLocations);
+                if (!moves.isEmpty()) action = moves.remove(0);
+                else action = EAction.Pass;
                 if (action == EAction.MoveForward || action == EAction.MoveBackward) {
                     spinPlease = 4;
                 }
@@ -395,5 +405,10 @@ public class QueenAI extends SharedAI implements IAntAI {
 
     @Override
     public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
+    
+    //@Override
+    public String toString2() {
+        return "Queen";
     }
 }

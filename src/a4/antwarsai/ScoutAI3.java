@@ -23,6 +23,8 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
     Random rand = new Random();
     private int[] nextExplorePoint = null;
     
+    
+    
     public ScoutAI3() {
         
     }
@@ -63,9 +65,11 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
 
     @Override
     public EAction chooseAction(IAntInfo thisAnt, ILocationInfo thisLocation, List<ILocationInfo> visibleLocations, List<EAction> possibleActions) {
-
+        long startTime = System.currentTimeMillis();
         sharedChooseAction(thisAnt, thisLocation, visibleLocations, possibleActions);
 
+        sharedInfo.getAllyTeamInfo().getQueen().getLocation();
+        
         EAction action = null;
         ILocationInfo loc = null;
 
@@ -99,6 +103,7 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
             }
         }
         else {
+            System.out.println("Scout trying to move");
             if (moves.isEmpty()) {
                 moves = sharedInfo.getSharedMap().getFirstOneTurnMove(thisAnt, nextExplorePoint[0], nextExplorePoint[1], true);
             }
@@ -119,7 +124,10 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
         if (action == null) {
             action = choseHowToMoveAnt(possibleActions);
         }
-
+        
+        long stopTime = System.currentTimeMillis();
+        long ela = stopTime - startTime;
+        System.out.println("Scout time: " + ela);
         return action;
     }
 
@@ -151,5 +159,10 @@ public class ScoutAI3 extends SharedAI implements IAntAI {
 
     @Override
     public void onEndMatch(int yourScore, int yourWins, int enemyScore, int enemyWins) {
+    }
+    
+    //@Override
+    public String toString2() {
+        return "ScoutAI3";
     }
 }

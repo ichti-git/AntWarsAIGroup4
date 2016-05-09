@@ -55,4 +55,17 @@ public class SharedAI {
     public void sharedOnDeath(IAntInfo thisAnt) {
         sharedInfo.getAllyTeamInfo().removeAnt(thisAnt);
     }
+    
+    protected ILocationInfo getManhattenFood(ILocationInfo loc, List<ILocationInfo> foodLocations) {
+        int minDist = sharedInfo.getWorldMax()[0]+sharedInfo.getWorldMax()[1];
+        ILocationInfo target = null;
+        for (ILocationInfo foodLoc : foodLocations) {
+            int dist = Math.abs(loc.getX() - foodLoc.getX()) + Math.abs(loc.getY() - foodLoc.getY());
+            if (dist < minDist) {
+                minDist = dist;
+                target = foodLoc;
+            }
+        }
+        return target;
+    }
 }
